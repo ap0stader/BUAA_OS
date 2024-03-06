@@ -1,7 +1,12 @@
 #include <blib.h>
 
 size_t strlen(const char *s) {
-    panic("please implement");
+    // size_t是无符号的长整型，是一种跟具体的平台有关联的类型，会具体调整其能表示的范围
+    size_t res = 0;
+    while (*s++) {
+	res++;
+    }
+    return res;
 }
 
 char *strcpy(char *dst, const char *src) {
@@ -43,11 +48,22 @@ int strncmp(const char *s1, const char *s2, size_t n) {
 }
 
 char *strcat(char *dst, const char *src) {
-    panic("please implement");
+    char *res = dst;
+    while (*dst)
+	dst++;
+    while ((*dst++ = *src++))
+	;
+    return res;
 }
 
 char *strncat(char *dst, const char *src, size_t n){
-    panic("please implement");
+    char *res = dst;
+    while (*dst)
+	dst++;
+    size_t finished = 0;
+    while ((finished < n) && (*dst++ = *src++))
+	finished++;
+    return res;
 }
 
 char *strchr(const char *str, int character){
@@ -62,7 +78,26 @@ char *strchr(const char *str, int character){
 }
 
 char* strsep(char** stringp, const char* delim){
-    panic("please implement");
+    if (*stringp == NULL) {
+	return NULL;
+    }
+    char *res = *stringp;
+    char *chrmin = NULL, *chrres = NULL;
+    while (*delim) {
+	if ((chrres = strchr(*stringp, *delim)) != NULL) {
+	    if (chrmin == NULL || chrres < chrmin) {
+		chrmin = chrres;
+	    }
+	}
+	delim++;
+    }
+    if (chrmin == NULL) {
+	*stringp = NULL; 
+    } else {
+	*stringp = chrmin + 1;
+	*chrmin = '\0';
+    }
+    return res;
 }
 
 
