@@ -31,16 +31,12 @@ if [ -z $FILE ]; then
     exit 1
 fi
 
-# You can remove ":" after finishing.
 if $SORT; then
-    # Your code here. (1/3)
-    :
+    sort -k4nr -k2n $FILE
 elif [ ! -z "$CMD" ]; then
-    # Your code here. (2/3)
-    :
+    grep $CMD $FILE
 elif [ ! -z $PID ]; then
-    # Your code here. (3/3)
-    :
+    sort -k2nr $FILE |  awk -v pid=$PID '$2==pid {print $3; pid=$3}'
 else
     usage
     exit 1
