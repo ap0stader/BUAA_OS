@@ -324,6 +324,8 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 				case 'x': // 十六进制
 				// Lab 1-Extra: Your code here. (3/5)
 					base = 16;
+					// fix: clean num
+					num = 0;
 					// judge negative
 					if (ch == '-') {
 						neg = 1;
