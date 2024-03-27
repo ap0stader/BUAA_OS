@@ -9,12 +9,19 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 	char c;
 	const char *s;
 	long num;
+	// lab1-exam: Add for P
+	long x;
+	long y;
+	long z;
 
 	int width;
 	int long_flag; // output is long (rather than int)
 	int neg_flag;  // output is negative
 	int ladjust;   // output is left-aligned
 	char padc;     // padding char
+	// lab1-exam: Add for P
+	int x_neg_flag;
+	int y_neg_flag;
 
 	for (;;) {
 		/* scan for the next '%' */
@@ -135,6 +142,49 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 				num = va_arg(ap, int);
 			}
 			print_num(out, data, num, 16, 0, width, ladjust, padc, 1);
+			break;
+		
+		// lab1-exam: Add for P
+		case 'P':
+			if (long_flag) {
+				x = va_arg(ap, long int);
+				y = va_arg(ap, long int);
+			} else {
+				x = va_arg(ap, int);
+				y = va_arg(ap, int);
+			}
+
+			z = (x + y) * (x - y);
+			z = z < 0 ? -z : z;
+			
+			if (x < 0) {
+				x_neg_flag = 1;
+				x = -x;
+			} else {
+				x_neg_flag = 0;
+			}
+
+			if (y < 0) {
+				y_neg_flag = 1;
+				y = -y;
+			} else {
+				y_neg_flag = 0;
+			}
+			// (
+			print_char(out, data, '(', 0, 0);
+			// <x>
+			print_num(out, data, x, 10, x_neg_flag, width, ladjust, padc, 0);
+			// ,
+			print_char(out, data, ',', 0, 0);
+			// <y>
+			print_num(out, data, y, 10, y_neg_flag, width, ladjust, padc, 0);
+			// ,
+			print_char(out, data, ',', 0, 0);
+			// <z>
+			// z is always not less than zero
+			print_num(out, data, z, 10, 0, width, ladjust, padc, 0);
+			// )
+			print_char(out, data, ')', 0, 0);
 			break;
 
 		case 'c':
