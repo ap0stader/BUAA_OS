@@ -10,6 +10,18 @@ void outputk(void *data, const char *buf, size_t len) {
 }
 /* End of Key Code "outputk" */
 
+// lab1-extra
+// 帮助函数，用于从控制台获取长度为 len 的字符，并写入 buf 中。
+void inputk(void *data, char *buf, size_t len) {
+	for (int i = 0; i < len; i++) {
+		while ((buf[i] = scancharc()) == '\0') {
+		}
+		if (buf[i] == '\r') {
+			buf[i] = '\n';
+		}
+	}
+}
+
 /* Lab 1 Key Code "printk" */
 void printk(const char *fmt, ...) {
 	va_list ap;
@@ -18,6 +30,14 @@ void printk(const char *fmt, ...) {
 	va_end(ap);
 }
 /* End of Key Code "printk" */
+
+// lab1-extra
+int scanf(const char *fmt, ...) {
+	va_list ap;
+	va_start(ap, fmt);
+	vscanfmt(inputk, NULL, fmt, ap);
+	va_end(ap);
+}
 
 void print_tf(struct Trapframe *tf) {
 	for (int i = 0; i < sizeof(tf->regs) / sizeof(tf->regs[0]); i++) {
