@@ -33,10 +33,12 @@ void printk(const char *fmt, ...) {
 
 // lab1-extra
 int scanf(const char *fmt, ...) {
+	int ret = 0;
 	va_list ap;
 	va_start(ap, fmt);
-	vscanfmt(inputk, NULL, fmt, ap);
+	ret = vscanfmt(inputk, NULL, fmt, ap);
 	va_end(ap);
+	return ret;
 }
 
 void print_tf(struct Trapframe *tf) {
