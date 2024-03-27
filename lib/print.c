@@ -338,7 +338,8 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 						if ('0' <= ch && ch <= '9') {
 							num += ch - '0';
 						} else if ('a' <= ch && ch <= 'f') {
-							num += ch - 'a';
+							// fix: a == 10
+							num += ch - 'a' + 10;
 						}
 						in(data, &ch, 1);
 					}
