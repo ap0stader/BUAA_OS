@@ -303,6 +303,8 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 					// judge negative 
 					if (ch == '-') {
 						neg = 1;
+						// fix: need to skip
+						in(data, &ch, 1);
 					} else {
 						neg = 0;
 					}
@@ -325,6 +327,8 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 					// judge negative
 					if (ch == '-') {
 						neg = 1;
+						// fix: need to skip
+						in(data, &ch, 1);
 					} else {
 						neg = 0;
 					}
