@@ -550,7 +550,7 @@ int buddy_alloc(u_int size, struct Page **new) {
 		pp = LIST_FIRST(&buddy_free_list[1]);
 		LIST_REMOVE(pp, pp_link);
 		*new = pp;
-		return 0;
+		return 2;
 	} else {
 		if (LIST_EMPTY(&buddy_free_list[0])) {
 			if (LIST_EMPTY(&buddy_free_list[1])) {
@@ -558,20 +558,20 @@ int buddy_alloc(u_int size, struct Page **new) {
 				return -E_NO_MEM;
 			} else {
 				// 选择空闲链表中的一个页控制块对应的 8KB 空闲区间，将其分为两个等大小的伙伴区间。
-				pp = LIST_FIRST(&buddy_free_list[0]);
+				pp = LIST_FIRST(&buddy_free_list[1]);
 				LIST_REMOVE(pp, pp_link);
 				struct Page *pp_next = pa2page(page2pa(pp) + PAGE_SIZE);
 				// 分配低地址的 4KB 空闲区间，并将高地址的 4KB 空闲区间插入至对应空闲链表。
 				*new = pp;
 				LIST_INSERT_HEAD(&buddy_free_list[0], pp_next, pp_link);
-				return 0; 
+				return 1; 
 			}
 		} else {
 			// 当所需大小对应的空闲链表非空时，优先选择该链表中的一个页控制块对应的内存区间分配。
 			pp = LIST_FIRST(&buddy_free_list[0]);
 			LIST_REMOVE(pp, pp_link);
 			*new = pp;
-			return 0;
+			return 1;
 		}
 	}
 }
