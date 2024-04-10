@@ -513,3 +513,107 @@ void page_check(void) {
 
 	printk("page_check() succeeded!\n");
 }
+
+#include <buddy.h>
+
+struct Page_list buddy_free_list[2];
+
+void buddy_init() {
+	LIST_INIT(&buddy_free_list[0]);
+	LIST_INIT(&buddy_free_list[1]);
+	// Alloc all the pages used for buddy
+	for (int i = BUDDY_PAGE_BASE; i < BUDDY_PAGE_END; i += PAGE_SIZE) {
+		struct Page *pp = pa2page(i);
+		LIST_REMOVE(pp, pp_link);
+	}
+	// At beginning, all the buddy are 8KB (8192 bytes) 
+	for (int i = BUDDY_PAGE_BASE; i < BUDDY_PAGE_END; i += 2 * PAGE_SIZE) {
+		struct Page *pp = pa2page(i);
+		LIST_INSERT_HEAD(&buddy_free_list[1], pp, pp_link);
+	}
+}
+
+int buddy_alloc(u_int size, struct Page **new) {
+	/* Your Code Here (1/2) */
+	struct Page *pp;
+
+	// 计算需要分配的字节数。
+	u_int alloc_size = ROUND(size, PAGE_SIZE);
+	if (alloc_size > 2 * PAGE_SIZE) {
+		return -E_NO_MEM;
+	} else if (alloc_size  == 2 * PAGE_SIZE) {
+		// 当需要分配 8KB 空闲区间，但 8KB 空闲链表为空时分配失败。
+		if (LIST_EMPTY(&buddy_free_list[1])) {
+			return -E_NO_MEM;
+		} 
+		// 所需大小对应的空闲链表非空时，优先选择该链表中的一个页控制块对应的内存区间分配。
+		pp = LIST_FIRST(&buddy_free_list[1]);
+		LIST_REMOVE(pp, pp_link);
+		*new = pp;
+		return 0;
+	} else {
+		if (LIST_EMPTY(&buddy_free_list[0])) {
+			if (LIST_EMPTY(&buddy_free_list[1])) {
+				// 若 8KB 空闲链表为空，分配失败。
+				return -E_NO_MEM;
+			} else {
+				// 选择空闲链表中的一个页控制块对应的 8KB 空闲区间，将其分为两个等大小的伙伴区间。
+				pp = LIST_FIRST(&buddy_free_list[0]);
+				LIST_REMOVE(pp, pp_link);
+				struct Page *pp_next = pa2page(page2pa(pp) + PAGE_SIZE);
+				// 分配低地址的 4KB 空闲区间，并将高地址的 4KB 空闲区间插入至对应空闲链表。
+				*new = pp;
+				LIST_INSERT_HEAD(&buddy_free_list[0], pp_next, pp_link);
+				return 0; 
+			}
+		} else {
+			// 当所需大小对应的空闲链表非空时，优先选择该链表中的一个页控制块对应的内存区间分配。
+			pp = LIST_FIRST(&buddy_free_list[0]);
+			LIST_REMOVE(pp, pp_link);
+			*new = pp;
+			return 0;
+		}
+	}
+}
+
+void buddy_free(struct Page *pp, int npp) {
+	/* Your Code Here (2/2) */
+	if (npp == 2) {
+		// 需要释放 8KB 空闲区间时，将页控制块插入对应空闲链表，完成内存区间的释放。
+		LIST_INSERT_HEAD(&buddy_free_list[1], pp, pp_link);
+	} else {
+		struct Page *pp_buddy;
+		struct Page *pp_control;
+		// 当需要释放 4KB 空闲区间
+		// 判断是左伙伴还是右伙伴
+		if (page2pa(pp) & PAGE_SIZE) {
+			// 加了PAGE_SIZE，为右伙伴，伙伴为控制块
+			pp_buddy = pa2page(page2pa(pp) - PAGE_SIZE);
+			pp_control = pp_buddy;
+		} else {
+			// 没加PAGE_SIZE，为左伙伴，且为控制块
+			pp_buddy = pa2page(page2pa(pp) + PAGE_SIZE);
+			pp_control = pp;
+		}
+		// 判断伙伴是否空闲
+		struct Page *pp_foreach;
+		int buddy_is_free = 0;
+		LIST_FOREACH(pp_foreach, &buddy_free_list[0], pp_link) {
+			if (pp_foreach == pp_buddy) {
+				buddy_is_free = 1;
+				break;
+			}
+		}		
+		if (buddy_is_free) {
+			// 伙伴空闲
+			// 将伙伴区间的页控制块从空闲链表中移出。
+			LIST_REMOVE(pp_buddy, pp_link);
+			// 将 8KB 空闲区间对应的页控制块插入对应空闲链表，完成内存区间的释放。
+			LIST_INSERT_HEAD(&buddy_free_list[1], pp_control, pp_link);
+		} else {
+			// 伙伴已分配，将页控制块插入对应空闲链表，完成内存区间的释放。
+			LIST_INSERT_HEAD(&buddy_free_list[0], pp, pp_link);
+		}
+	}
+}
+
