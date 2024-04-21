@@ -74,7 +74,7 @@ static void map_segment(Pde *pgdir, u_int asid, u_long pa, u_long va, u_int size
 		 *  Use 'pa2page' to get the 'struct Page *' of the physical address.
 		 */
 		/* Exercise 3.2: Your code here. */
-
+		page_insert(pgdir, asid, pa2page(pa + i), va + i, perm);
 	}
 }
 
@@ -144,13 +144,17 @@ void env_init(void) {
 	/* Step 1: Initialize 'env_free_list' with 'LIST_INIT' and 'env_sched_list' with
 	 * 'TAILQ_INIT'. */
 	/* Exercise 3.1: Your code here. (1/2) */
-
+	LIST_INIT(&env_free_list);
+	TAILQ_INIT(&env_sched_list);
 	/* Step 2: Traverse the elements of 'envs' array, set their status to 'ENV_FREE' and insert
 	 * them into the 'env_free_list'. Make sure, after the insertion, the order of envs in the
 	 * list should be the same as they are in the 'envs' array. */
 
 	/* Exercise 3.1: Your code here. (2/2) */
-
+	for (i = NENV - 1; i >= 0; i--) {
+		envs[i].env_status = ENV_FREE;
+		LIST_INSERT_HEAD(&env_free_list, &envs[i], env_link);
+	}
 	/*
 	 * We want to map 'UPAGES' and 'UENVS' to *every* user space with PTE_G permission (without
 	 * PTE_D), then user programs can read (but cannot write) kernel data structures 'pages' and
@@ -184,7 +188,8 @@ static int env_setup_vm(struct Env *e) {
 	struct Page *p;
 	try(page_alloc(&p));
 	/* Exercise 3.3: Your code here. */
-
+	p->pp_ref++;
+	e->env_pgdir = (Pde *)page2kva(p);
 	/* Step 2: Copy the template page directory 'base_pgdir' to 'e->env_pgdir'. */
 	/* Hint:
 	 *   As a result, the address space of all envs is identical in [UTOP, UVPT).
