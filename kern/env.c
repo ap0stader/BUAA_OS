@@ -246,6 +246,7 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	 */
 	e->env_user_tlb_mod_entry = 0; // for lab4
 	e->env_runs = 0;	       // for lab6
+	e->env_scheds = 0;	       // for Lab3 Exam
 	/* Exercise 3.4: Your code here. (3/4) */
 	e->env_id = mkenvid(e);
 	try(asid_alloc(&e->env_asid));
@@ -438,6 +439,8 @@ extern void env_pop_tf(struct Trapframe *tf, u_int asid) __attribute__((noreturn
  */
 void env_run(struct Env *e) {
 	assert(e->env_status == ENV_RUNNABLE);
+	// Lab3 exam
+	e->env_runs++;
 	// WARNING BEGIN: DO NOT MODIFY FOLLOWING LINES!
 #ifdef MOS_PRE_ENV_RUN
 	MOS_PRE_ENV_RUN_STMT
@@ -470,6 +473,18 @@ void env_run(struct Env *e) {
 	 */
 	/* Exercise 3.8: Your code here. (2/2) */
 	env_pop_tf(&curenv->env_tf, curenv->env_asid);
+}
+
+void env_stat(struct Env *e, u_int *pri, u_int *scheds, u_int *runs, u_int *clocks) {
+	// pri 指针： 用于保存进程的优先级。
+	*pri = e->env_pri;
+	// scheds 指针：用于保存该进程从调度队列首部取出，被调度运行的次数。
+	*scheds = e->env_scheds;
+	// runs 指针：用于保存进程被时钟中断打断的次数。
+	*runs = e->env_runs;
+	// clocks 指针：用于保存进程运行时 CP0 Count 寄存器所增加的数值总和。
+	struct Trapframe *tf = ((struct Trapframe *)KSTACKTOP - 1);
+	*clocks = tf->cp0_count;
 }
 
 void env_check() {

@@ -44,6 +44,8 @@ void schedule(int yield) {
 			panic("schedule: no runnable envs");
 		}
 		e = TAILQ_FIRST(&env_sched_list);
+		// Lab 3 Exam
+		e->env_scheds++;
 		count = e->env_pri;
 	}
 	count--;

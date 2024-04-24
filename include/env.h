@@ -39,6 +39,9 @@ struct Env {
 
 	// Lab 6 scheduler counts
 	u_int env_runs; // number of times we've been env_run'ed
+
+	// Lab3 Exam 
+	u_int env_scheds;
 };
 
 LIST_HEAD(Env_list, Env);
@@ -54,6 +57,8 @@ void env_destroy(struct Env *e);
 
 int envid2env(u_int envid, struct Env **penv, int checkperm);
 void env_run(struct Env *e) __attribute__((noreturn));
+
+void env_stat(struct Env *e, u_int *pri, u_int *scheds, u_int *runs, u_int *clocks);
 
 void env_check(void);
 void envid2env_check(void);
