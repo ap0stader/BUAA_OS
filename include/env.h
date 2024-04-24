@@ -42,6 +42,7 @@ struct Env {
 
 	// Lab3 Exam 
 	u_int env_scheds;
+	u_int env_count;
 };
 
 LIST_HEAD(Env_list, Env);

@@ -247,6 +247,7 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	e->env_user_tlb_mod_entry = 0; // for lab4
 	e->env_runs = 0;	       // for lab6
 	e->env_scheds = 0;	       // for Lab3 Exam
+	e->env_count = 0;
 	/* Exercise 3.4: Your code here. (3/4) */
 	e->env_id = mkenvid(e);
 	try(asid_alloc(&e->env_asid));
@@ -482,7 +483,8 @@ void env_stat(struct Env *e, u_int *pri, u_int *scheds, u_int *runs, u_int *cloc
 	*runs = e->env_runs;
 	// clocks 指针：用于保存进程运行时 CP0 Count 寄存器所增加的数值总和。
 	struct Trapframe *tf = ((struct Trapframe *)KSTACKTOP - 1);
-	*clocks = tf->cp0_count;
+	e->env_count = e->env_count + tf->cp0_count;
+	*clocks = e->env_count;
 }
 
 void env_check() {
