@@ -34,24 +34,23 @@ void do_reserved(struct Trapframe *tf) {
 void do_ri(struct Trapframe *tf) {
 	// 取出异常的指令
 	u_long instruction = *((u_long *)tf->cp0_epc);
-	u_long instruction_mask = 0xFC0007FF;
-	
+
+	u_long instruction_mask = 0xFC0007FF;	
 	u_long rs_mask = 0x3E00000;
 	u_long rt_mask = 0x1F0000;
 	u_long rd_mask = 0xF800;
 
 	u_long instruction_judge = instruction & instruction_mask;
+	u_long rs = (instruction & rs_mask) >> 21;
+	u_long rt = (instruction & rt_mask) >> 16;
+	u_long rd = (instruction & rd_mask) >> 11;
 	
-	u_long rs = instruction & rs_mask;
-	u_long rt = instruction & rt_mask;
-	u_long rd = instruction & rd_mask;
-
 	u_long pmaxub = 0x3F;
 	u_long cas = 0x3E;
 
 	if (instruction_judge == pmaxub) {
 		tf->regs[rd] = (u_long) 0;
-		for(int i = 0; i < 21; i += 8) {
+		for(int i = 0; i < 32; i += 8) {
 			u_int rs_i_byte = tf->regs[rs] & (0xff << i);
 			u_int rt_i_byte = tf->regs[rt] & (0xff << i);
 			if (rs_i_byte < rt_i_byte) {
