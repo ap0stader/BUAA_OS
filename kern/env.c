@@ -439,8 +439,6 @@ extern void env_pop_tf(struct Trapframe *tf, u_int asid) __attribute__((noreturn
  */
 void env_run(struct Env *e) {
 	assert(e->env_status == ENV_RUNNABLE);
-	// Lab3 exam
-	e->env_runs++;
 	// WARNING BEGIN: DO NOT MODIFY FOLLOWING LINES!
 #ifdef MOS_PRE_ENV_RUN
 	MOS_PRE_ENV_RUN_STMT
