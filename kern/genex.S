@@ -36,3 +36,6 @@ BUILD_HANDLER sys do_syscall
 #endif
 
 BUILD_HANDLER reserved do_reserved
+
+# Lab3 Extra
+BUILD_HANDLER ri do_ri
