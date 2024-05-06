@@ -533,5 +533,4 @@ void do_syscall(struct Trapframe *tf) {
 	 */
 	/* Exercise 4.2: Your code here. (4/4) */
 	tf->regs[2] = func(arg1, arg2, arg3, arg4, arg5);
-	printk("%d %x %x\n", sysno, curenv->env_id, tf->regs[2]);
 }
