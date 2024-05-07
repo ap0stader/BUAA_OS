@@ -75,7 +75,7 @@ static void duppage(u_int envid, u_int vpn) {
 	/* Step 1: Get the permission of the page. */
 	/* Hint: Use 'vpt' to find the page table entry. */
 	/* Exercise 4.10: Your code here. (1/2) */
-	addr = vpn * PAGE_SIZE;
+	addr = vpn << PGSHIFT;
 	perm = vpt[vpn] & 0xfff;
 	/* Step 2: If the page is writable, and not shared with children, and not marked as COW yet,
 	 * then map it as copy-on-write, both in the parent (0) and the child (envid). */
@@ -125,7 +125,7 @@ int fork(void) {
 	/* Exercise 4.15: Your code here. (1/2) */
 	for (i = 0; i < VPN(USTACKTOP); i++) {
 		if ((vpd[i >> 10] & PTE_V) && (vpt[i] & PTE_V)) {
-			duppage(child, VPN(i));
+			duppage(child, i);
 		}
 	}
 	/* Step 4: Set up the child's tlb mod handler and set child's 'env_status' to
