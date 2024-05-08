@@ -137,4 +137,15 @@ int sync(void);
 #define O_EXCL 0x0400  /* error if already exists */
 #define O_MKDIR 0x0800 /* create directory, not regular file */
 
+// semaphore
+void sem_open(int sem_id, int n);
+int sem_wait(int sem_id);
+int sem_post(int sem_id);
+int sem_kill(int sem_id);
+
+void syscall_sem_open(int sem_id, int n);
+int syscall_sem_wait(int sem_id);
+int syscall_sem_post(int sem_id);
+int syscall_sem_kill(int sem_id);
+
 #endif
