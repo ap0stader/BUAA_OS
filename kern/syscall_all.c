@@ -514,7 +514,7 @@ int sys_msg_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 	}
 	// 将相应数据填入消息控制块
 	m->msg_value = value;
-	m->msg_from = envid;
+	m->msg_from = curenv->env_id;
 	// 消息控制块的 msg_perm 需要在参数 perm 的基础上增加权限位 PTE_V
 	m->msg_perm = perm | PTE_V;
 	m->msg_page = p;
