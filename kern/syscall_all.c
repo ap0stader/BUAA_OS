@@ -481,6 +481,97 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 	return 0;
 }
 
+// Lab 4-1 Extra
+
+int sys_msg_send(u_int envid, u_int value, u_int srcva, u_int perm) {
+	struct Env *e;
+	struct Page *p;
+	struct Msg *m;
+
+	if (srcva != 0 && is_illegal_va(srcva)) {
+		return -E_INVAL;
+	}
+	try(envid2env(envid, &e, 0));
+	if (TAILQ_EMPTY(&msg_free_list)) {
+		return -E_NO_MSG;
+	}
+	/* Your Code Here (1/3) */
+	// 从空闲消息链表头部取出消息控制块
+	m = TAILQ_FIRST(&msg_free_list);
+	TAILQ_REMOVE(&msg_free_list, m, msg_link);
+	// 将消息控制块被使用的次数 msg_tier 增加 1
+	m->msg_tier++;
+	// 更新消息控制块的状态为 MSG_SENT
+	m->msg_status = MSG_SENT;
+	// 将传递的物理页引用次数增加 1
+	if (srcva != 0) {
+		p = page_lookup(curenv->env_pgdir, srcva, NULL);
+		if (p != NULL) {
+			p->pp_ref++;
+		}
+	} else {
+		p = NULL;
+	}
+	// 将相应数据填入消息控制块
+	m->msg_value = value;
+	m->msg_from = envid;
+	// 消息控制块的 msg_perm 需要在参数 perm 的基础上增加权限位 PTE_V
+	m->msg_perm = perm | PTE_V;
+	m->msg_page = p;
+	// 将消息控制块插入目标进程的消息链表尾部
+	TAILQ_INSERT_TAIL(&e->env_msg_list, m, msg_link);
+	// 返回消息标识符
+	return msg2id(m);
+}
+
+int sys_msg_recv(u_int dstva) {
+	struct Msg *m;
+	struct Page *p;
+
+	if (dstva != 0 && is_illegal_va(dstva)) {
+		return -E_INVAL;
+	}
+	if (TAILQ_EMPTY(&curenv->env_msg_list)) {
+		return -E_NO_MSG;
+	}
+	/* Your Code Here (2/3) */
+	// 从消息链表头部取出消息控制块
+	m = TAILQ_FIRST(&curenv->env_msg_list);
+	TAILQ_REMOVE(&curenv->env_msg_list, m, msg_link);
+	if (m->msg_page != NULL) {
+		p = m->msg_page;
+		// 当需要传递物理页时，将传递的物理页引用次数减少 1。
+		p->pp_ref--;
+		// 当需要传递物理页且 dstva 不为 0 时，根据消息控制块中的数据，传递物理页面的映射关系。
+		if (dstva != 0) {
+			try(page_insert(curenv->env_pgdir, curenv->env_asid, p, dstva, m->msg_perm));
+		}
+	}
+	// 将消息控制块中传递的数据复制到进程控制块中，用于向用户态传递数据。
+	curenv->env_msg_from = m->msg_from;
+	curenv->env_msg_perm = m->msg_perm;
+	curenv->env_msg_value = m->msg_value;
+	// 更新消息控制块的状态为 MSG_RECV
+	m->msg_status = MSG_RECV;
+	// 并将其插入空闲消息链表尾部
+	TAILQ_INSERT_TAIL(&msg_free_list, m, msg_link);
+	// 返回 0 表示系统调用正常完成
+	return 0;
+}
+
+int sys_msg_status(u_int msgid) {
+	struct Msg *m;
+	/* Your Code Here (3/3) */
+	m = &msgs[MSGX(msgid)];
+	if (msg2id(m) == msgid) {
+		return m->msg_status;
+	} else if (msg2id(m) > msgid) {
+		return MSG_RECV;
+	} else {
+		return -E_INVAL;
+	}
+}
+
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
@@ -500,6 +591,9 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_cgetc] = sys_cgetc,
     [SYS_write_dev] = sys_write_dev,
     [SYS_read_dev] = sys_read_dev,
+    [SYS_msg_send] = sys_msg_send,
+    [SYS_msg_recv] = sys_msg_recv,
+    [SYS_msg_status] = sys_msg_status,
 };
 
 /* Overview:

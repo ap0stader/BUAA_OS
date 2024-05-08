@@ -265,6 +265,9 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	e->env_tf.cp0_status = STATUS_IM7 | STATUS_IE | STATUS_EXL | STATUS_UM;
 	// Reserve space for 'argc' and 'argv'.
 	e->env_tf.regs[29] = USTACKTOP - sizeof(int) - sizeof(char **);
+	
+	// Lab 4-1 Extra
+	TAILQ_INIT(&e->env_msg_list);
 
 	/* Step 5: Remove the new Env from env_free_list. */
 	/* Exercise 3.4: Your code here. (4/4) */
