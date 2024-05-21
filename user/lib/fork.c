@@ -107,9 +107,6 @@ int fork(void) {
 	u_int i;
 
 	/* Step 1: Set our TLB Mod user exception entry to 'cow_entry' if not done yet. */
-	if (env->env_user_tlb_mod_entry != (u_int)cow_entry) {
-		try(syscall_set_tlb_mod_entry(0, cow_entry));
-	}
 
 	/* Step 2: Create a child env that's not ready to be scheduled. */
 	// Hint: 'env' should always point to the current env itself, so we should fix it to the
@@ -118,6 +115,10 @@ int fork(void) {
 	if (child == 0) {
 		env = envs + ENVX(syscall_getenvid());
 		return 0;
+	}
+	
+	if (env->env_user_tlb_mod_entry != (u_int)cow_entry) {
+		try(syscall_set_tlb_mod_entry(0, cow_entry));
 	}
 
 	/* Step 3: Map all mapped pages below 'USTACKTOP' into the child's address space. */
