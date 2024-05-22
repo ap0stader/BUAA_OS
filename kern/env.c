@@ -280,7 +280,6 @@ int env_alloc(struct Env **new, u_int parent_id) {
 int env_clone(struct Env **new, struct Env *parent) {
 	int r;
 	struct Env *e;
-	struct Page *p;
 
 	if (LIST_EMPTY(&env_free_list)) {
 		return -E_NO_FREE_ENV;

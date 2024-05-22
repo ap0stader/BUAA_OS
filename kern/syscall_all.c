@@ -487,7 +487,7 @@ int sys_clone(void *func, void *child_stack) {
 	if (curenv->env_pgdir[PDX(KSEG1)] >= 64) {
 		return -E_ACT_ENV_NUM_EXCEED;
 	}
-	env_clone(&e, curenv);
+	try(env_clone(&e, curenv));
 	e->env_tf = curenv->env_tf;
 	e->env_tf.cp0_epc = (u_long) func;
 	e->env_tf.regs[29] = (u_long) child_stack;
