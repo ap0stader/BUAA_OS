@@ -208,6 +208,9 @@ static int env_setup_vm(struct Env *e) {
 	/* Step 3: Map its own page table at 'UVPT' with readonly permission.
 	 * As a result, user programs can read its page table through 'UVPT' */
 	e->env_pgdir[PDX(UVPT)] = PADDR(e->env_pgdir) | PTE_V;
+
+	// Lab4-2 extra
+	e->env_mem_counter = 1;
 	return 0;
 }
 
@@ -268,6 +271,34 @@ int env_alloc(struct Env **new, u_int parent_id) {
 
 	/* Step 5: Remove the new Env from env_free_list. */
 	/* Exercise 3.4: Your code here. (4/4) */
+	LIST_REMOVE(e, env_link);
+	*new = e;
+	return 0;
+}
+
+// lab4-2 extra
+int env_clone(struct Env **new, struct Env *parent) {
+	int r;
+	struct Env *e;
+	struct Page *p;
+
+	if (LIST_EMPTY(&env_free_list)) {
+		return -E_NO_FREE_ENV;
+	}
+	e = LIST_FIRST(&env_free_list);
+	
+	e->env_pgdir = parent->env_pgdir;
+	p = pa2page(PADDR((u_long) parent->env_pgdir));
+	p->pp_ref++;
+
+	e->env_user_tlb_mod_entry = 0; // for lab4
+	e->env_runs = 0;	       // for lab6
+	e->env_id = mkenvid(e);
+	e->env_asid = parent->env_asid;
+	e->env_parent_id = parent->env_id;
+	e->env_tf.cp0_status = STATUS_IM7 | STATUS_IE | STATUS_EXL | STATUS_UM;
+	e->env_tf.regs[29] = USTACKTOP - sizeof(int) - sizeof(char **);
+
 	LIST_REMOVE(e, env_link);
 	*new = e;
 	return 0;
@@ -376,35 +407,39 @@ void env_free(struct Env *e) {
 
 	/* Hint: Note the environment's demise.*/
 	printk("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
-
-	/* Hint: Flush all mapped pages in the user portion of the address space */
-	for (pdeno = 0; pdeno < PDX(UTOP); pdeno++) {
-		/* Hint: only look at mapped page tables. */
-		if (!(e->env_pgdir[pdeno] & PTE_V)) {
-			continue;
-		}
-		/* Hint: find the pa and va of the page table. */
-		pa = PTE_ADDR(e->env_pgdir[pdeno]);
-		pt = (Pte *)KADDR(pa);
-		/* Hint: Unmap all PTEs in this page table. */
-		for (pteno = 0; pteno <= PTX(~0); pteno++) {
-			if (pt[pteno] & PTE_V) {
-				page_remove(e->env_pgdir, e->env_asid,
-					    (pdeno << PDSHIFT) | (pteno << PGSHIFT));
+	// lab4-2 extra
+	if (e->env_mem_counter == 1) {
+		/* Hint: Flush all mapped pages in the user portion of the address space */
+		for (pdeno = 0; pdeno < PDX(UTOP); pdeno++) {
+			/* Hint: only look at mapped page tables. */
+			if (!(e->env_pgdir[pdeno] & PTE_V)) {
+				continue;
 			}
+			/* Hint: find the pa and va of the page table. */
+			pa = PTE_ADDR(e->env_pgdir[pdeno]);
+			pt = (Pte *)KADDR(pa);
+			/* Hint: Unmap all PTEs in this page table. */
+			for (pteno = 0; pteno <= PTX(~0); pteno++) {
+				if (pt[pteno] & PTE_V) {
+					page_remove(e->env_pgdir, e->env_asid,
+						    (pdeno << PDSHIFT) | (pteno << PGSHIFT));
+				}
+			}
+			/* Hint: free the page table itself. */
+			e->env_pgdir[pdeno] = 0;
+			page_decref(pa2page(pa));
+			/* Hint: invalidate page table in TLB */
+			tlb_invalidate(e->env_asid, UVPT + (pdeno << PGSHIFT));
 		}
-		/* Hint: free the page table itself. */
-		e->env_pgdir[pdeno] = 0;
-		page_decref(pa2page(pa));
-		/* Hint: invalidate page table in TLB */
-		tlb_invalidate(e->env_asid, UVPT + (pdeno << PGSHIFT));
+		/* Hint: free the page directory. */
+		page_decref(pa2page(PADDR(e->env_pgdir)));
+		/* Hint: free the ASID */
+		asid_free(e->env_asid);
+		/* Hint: invalidate page directory in TLB */
+		tlb_invalidate(e->env_asid, UVPT + (PDX(UVPT) << PGSHIFT));
+	} else {
+		e->env_mem_counter--;
 	}
-	/* Hint: free the page directory. */
-	page_decref(pa2page(PADDR(e->env_pgdir)));
-	/* Hint: free the ASID */
-	asid_free(e->env_asid);
-	/* Hint: invalidate page directory in TLB */
-	tlb_invalidate(e->env_asid, UVPT + (PDX(UVPT) << PGSHIFT));
 	/* Hint: return the environment to the free list. */
 	e->env_status = ENV_FREE;
 	LIST_INSERT_HEAD((&env_free_list), (e), env_link);
