@@ -493,7 +493,7 @@ int sys_clone(void *func, void *child_stack) {
 	e->env_tf.regs[29] = (u_long) child_stack;
 	e->env_status = ENV_RUNNABLE;
 	TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
-	return 0;
+	return e->env_id;
 }
 
 void *syscall_table[MAX_SYSNO] = {

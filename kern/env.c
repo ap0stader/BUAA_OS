@@ -295,7 +295,6 @@ int env_clone(struct Env **new, struct Env *parent) {
 	e->env_asid = parent->env_asid;
 	e->env_parent_id = parent->env_id;
 	e->env_tf.cp0_status = STATUS_IM7 | STATUS_IE | STATUS_EXL | STATUS_UM;
-	e->env_tf.regs[29] = USTACKTOP - sizeof(int) - sizeof(char **);
 
 	LIST_REMOVE(e, env_link);
 	*new = e;
