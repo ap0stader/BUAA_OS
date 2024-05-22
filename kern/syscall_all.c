@@ -484,11 +484,10 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 // lab4-2 extra
 int sys_clone(void *func, void *child_stack) {
 	struct Env *e;
-	if (curenv->env_mem_counter >= 64) {
+	if (curenv->env_pgdir[PDX(KSEG1)] >= 64) {
 		return -E_ACT_ENV_NUM_EXCEED;
 	}
 	env_clone(&e, curenv);
-	curenv->env_mem_counter++;
 	e->env_tf = curenv->env_tf;
 	e->env_tf.cp0_epc = (u_long) func;
 	e->env_tf.regs[29] = (u_long) child_stack;

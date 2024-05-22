@@ -210,7 +210,7 @@ static int env_setup_vm(struct Env *e) {
 	e->env_pgdir[PDX(UVPT)] = PADDR(e->env_pgdir) | PTE_V;
 
 	// Lab4-2 extra
-	e->env_mem_counter = 1;
+	e->env_pgdir[PDX(KSEG1)] = 1;
 	return 0;
 }
 
@@ -288,8 +288,7 @@ int env_clone(struct Env **new, struct Env *parent) {
 	e = LIST_FIRST(&env_free_list);
 	
 	e->env_pgdir = parent->env_pgdir;
-	p = pa2page(PADDR((u_long) parent->env_pgdir));
-	p->pp_ref++;
+	e->env_pgdir[PDX(KSEG1)]++;
 
 	e->env_user_tlb_mod_entry = 0; // for lab4
 	e->env_runs = 0;	       // for lab6
@@ -408,7 +407,7 @@ void env_free(struct Env *e) {
 	/* Hint: Note the environment's demise.*/
 	printk("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
 	// lab4-2 extra
-	if (e->env_mem_counter == 1) {
+	if (e->env_pgdir[PDX(KSEG1)] == 1) {
 		/* Hint: Flush all mapped pages in the user portion of the address space */
 		for (pdeno = 0; pdeno < PDX(UTOP); pdeno++) {
 			/* Hint: only look at mapped page tables. */
@@ -438,7 +437,7 @@ void env_free(struct Env *e) {
 		/* Hint: invalidate page directory in TLB */
 		tlb_invalidate(e->env_asid, UVPT + (PDX(UVPT) << PGSHIFT));
 	} else {
-		e->env_mem_counter--;
+		e->env_pgdir[PDX(KSEG1)]--;
 	}
 	/* Hint: return the environment to the free list. */
 	e->env_status = ENV_FREE;
