@@ -510,7 +510,7 @@ int dir_lookup(struct File *dir, char *name, struct File **file) {
 			// If we find the target file, set '*file' to it and set up its 'f_dir'
 			// field.
 			/* Exercise 5.8: Your code here. (3/3) */
-			if (strcmp(f->f_name, name)) {
+			if (strcmp(f->f_name, name) == 0) {
 				*file = f;
 				f->f_dir = dir;
 				return 0;
