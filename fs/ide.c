@@ -121,7 +121,7 @@ void ide_write(u_int diskno, u_int secno, void *src, u_int nsecs) {
 
 		// Step 2: Write the 7:0 bits of sector number to LBAL register
 		/* Exercise 5.3: Your code here. (4/9) */
-		temp = secno && 0xff;
+		temp = secno & 0xff;
 		panic_on(syscall_write_dev(&temp, MALTA_IDE_LBAL, 1));
 
 		// Step 3: Write the 15:8 bits of sector number to LBAM register
