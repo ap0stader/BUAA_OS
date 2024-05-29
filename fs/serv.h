@@ -28,6 +28,9 @@ int file_remove(char *path);
 int file_dirty(struct File *f, u_int offset);
 void file_flush(struct File *);
 
+// lab5-2 exam
+int directory_copy(char *src_path, char *dst_path);
+
 void fs_init(void);
 void fs_sync(void);
 extern uint32_t *bitmap;

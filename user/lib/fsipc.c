@@ -136,3 +136,21 @@ int fsipc_remove(const char *path) {
 int fsipc_sync(void) {
 	return fsipc(FSREQ_SYNC, fsipcbuf, 0, 0);
 }
+
+// lab5-2 exam
+int fsipc_copy(const char *src_path, const char *dst_path) {
+	// 若路径为空或超出长度限制返回 -E_BAD_PATH，其余错误情况不在测试范围内。
+	int src_path_len = strlen(src_path);
+	int dst_path_len = strlen(dst_path);
+	if (src_path_len == 0 || dst_path_len == 0 ||
+		src_path_len > MAXPATHLEN || dst_path_len > MAXPATHLEN) {
+		return -E_BAD_PATH;
+	}
+	struct Fsreq_copy *req = (struct Fsreq_copy *)fsipcbuf;
+
+	strcpy(req->req_src_path, src_path);
+	strcpy(req->req_dst_path, dst_path);
+
+	return fsipc(FSREQ_COPY, req, 0, 0);
+}
+
