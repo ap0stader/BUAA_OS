@@ -357,10 +357,10 @@ void serve_chmod(u_int envid, struct Fsreq_chmod *rq) {
 		f->f_mode = rq->req_mode;
 	} else if (rq->req_type == 1) {
 		// 当 type 为 1 时，表示添加权限，将 mode 指定的权限添加至文件当前的权限中。
-		f->f_mode = f->f_mode + rq->req_mode;
+		f->f_mode = f->f_mode | rq->req_mode;
 	} else if (rq->req_type == 2) {
 		// 当 type 为 2 时，表示移除权限，将 mode 指定的权限从文件当前的权限中移除。
-		f->f_mode = f->f_mode - rq->req_mode;
+		f->f_mode = f->f_mode & (~ rq->req_mode);
 	}
 	// 并调用 file_close 关闭文件，写回文件权限
 	file_close(f);
