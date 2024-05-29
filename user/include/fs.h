@@ -23,15 +23,29 @@
 
 #define FILE_STRUCT_SIZE 256
 
+// lab 5-2 extra
+#define FMODE_R 0x4
+#define FMODE_W 0x2
+#define FMODE_X 0x1
+#define FMODE_RW 0x6
+#define FMODE_ALL 0x7
+
+#define STMODE2FMODE(st_mode) (((st_mode) >> 6) & FMODE_ALL)
+
 struct File {
 	char f_name[MAXNAMELEN]; // filename
 	uint32_t f_size;	 // file size in bytes
 	uint32_t f_type;	 // file type
+	// lab 5-2 extra
+	// 并在 struct File 中添加字段 uint32_t f_mode
+	uint32_t f_mode;         // file mode
 	uint32_t f_direct[NDIRECT];
 	uint32_t f_indirect;
-
+	
 	struct File *f_dir; // the pointer to the dir where this file is in, valid only in memory.
-	char f_pad[FILE_STRUCT_SIZE - MAXNAMELEN - (3 + NDIRECT) * 4 - sizeof(void *)];
+	// lab 5-2 extra
+	// 并修改 f_pad 以保证 sizeof(struct File) 仍为 FILE_STRUCT_SIZE。
+	char f_pad[FILE_STRUCT_SIZE - MAXNAMELEN - (4 + NDIRECT) * 4 - sizeof(void *)];
 } __attribute__((aligned(4), packed));
 
 #define FILE2BLK (BLOCK_SIZE / sizeof(struct File))

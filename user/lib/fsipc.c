@@ -136,3 +136,18 @@ int fsipc_remove(const char *path) {
 int fsipc_sync(void) {
 	return fsipc(FSREQ_SYNC, fsipcbuf, 0, 0);
 }
+
+// lab 5-2 extra
+int fsipc_chmod(const char* path, u_int mode, int type) {
+	int path_len = strlen(path);
+	if (path_len == 0 || path_len > MAXPATHLEN) {
+		return -E_BAD_PATH;
+	}
+	struct Fsreq_chmod *req = (struct Fsreq_chmod *)fsipcbuf;
+
+	strcpy(req->req_path, path);
+	req->req_mode = mode;
+	req->req_type = type;
+	
+	return fsipc(FSREQ_CHMOD, req, 0, 0);
+}

@@ -164,6 +164,15 @@ void serve_open(u_int envid, struct Fsreq_open *rq) {
 		return;
 	}
 
+	// lab 5-2 extra
+	// 检查打开的文件是否具有请求中的权限 rq->req_omode，若缺少请求的权限，调用
+	if ((rq->req_omode == O_RDONLY && (f->f_mode & FMODE_R) != FMODE_R) ||
+		(rq->req_omode == O_WRONLY && (f->f_mode & FMODE_W) != FMODE_W) ||
+		(rq->req_omode == O_RDWR && (f->f_mode & FMODE_RW) != FMODE_RW)) {
+		ipc_send(envid, -E_PERM_DENY, 0, 0);
+		return;
+	}
+
 	// Save the file pointer.
 	o->o_file = f;
 
@@ -334,6 +343,31 @@ void serve_sync(u_int envid) {
 	ipc_send(envid, 0, 0, 0);
 }
 
+// lab 5-2 extra
+void serve_chmod(u_int envid, struct Fsreq_chmod *rq) {
+	// 使用 file_open 打开请求路径的文件，若打开失败的错误码为 r，则调用 ipc_send(envid, r, 0, 0); 并返回
+	struct File *f;
+	int r;
+	if ((r = file_open(rq->req_path, &f)) < 0) {
+		ipc_send(envid, r, 0, 0);
+		return;
+	}
+	if (rq->req_type == 0) {
+		// 当 type 为 0 时，表示设置权限，直接设置文件权限为 mode。
+		f->f_mode = rq->req_mode;
+	} else if (rq->req_type == 1) {
+		// 当 type 为 1 时，表示添加权限，将 mode 指定的权限添加至文件当前的权限中。
+		f->f_mode = f->f_mode + rq->req_mode;
+	} else if (rq->req_type == 2) {
+		// 当 type 为 2 时，表示移除权限，将 mode 指定的权限从文件当前的权限中移除。
+		f->f_mode = f->f_mode - rq->req_mode;
+	}
+	// 并调用 file_close 关闭文件，写回文件权限
+	file_close(f);
+	// 成功后则调用 ipc_send(envid, 0, 0, 0);
+	ipc_send(envid, 0, 0, 0);
+}
+
 /*
  * The serve function table
  * File system use this table and the request number to
@@ -342,7 +376,7 @@ void serve_sync(u_int envid) {
 void *serve_table[MAX_FSREQNO] = {
     [FSREQ_OPEN] = serve_open,	 [FSREQ_MAP] = serve_map,     [FSREQ_SET_SIZE] = serve_set_size,
     [FSREQ_CLOSE] = serve_close, [FSREQ_DIRTY] = serve_dirty, [FSREQ_REMOVE] = serve_remove,
-    [FSREQ_SYNC] = serve_sync,
+    [FSREQ_SYNC] = serve_sync, [FSREQ_CHMOD] = serve_chmod, 
 };
 
 /*

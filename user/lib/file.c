@@ -189,6 +189,7 @@ static int file_stat(struct Fd *fd, struct Stat *st) {
 	strcpy(st->st_name, f->f_file.f_name);
 	st->st_size = f->f_file.f_size;
 	st->st_isdir = f->f_file.f_type == FTYPE_DIR;
+	st->st_mode = f->f_file.f_mode;
 	return 0;
 }
 
@@ -258,3 +259,9 @@ int remove(const char *path) {
 int sync(void) {
 	return fsipc_sync();
 }
+
+// lab 5-2 extra
+int chmod(const char *path, u_int mode, int type) {
+	return fsipc_chmod(path, mode, type);
+}
+

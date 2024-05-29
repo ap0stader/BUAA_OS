@@ -43,6 +43,8 @@ struct Stat {
 	char st_name[MAXNAMELEN];
 	u_int st_size;
 	u_int st_isdir;
+	// lab 5-2 extra
+	u_int st_mode;
 	struct Dev *st_dev;
 };
 

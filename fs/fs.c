@@ -494,6 +494,11 @@ int file_dirty(struct File *f, u_int offset) {
 int dir_lookup(struct File *dir, char *name, struct File **file) {
 	// Step 1: Calculate the number of blocks in 'dir' via its size.
 	u_int nblock;
+	// lab 5-2 extra
+	// 遍历文件夹前首先检查 dir 是否具有权限 FMODE_X，若没有则返回 -E_PERM_DENY
+	if (!(dir->f_mode & FMODE_X)) {
+		return -E_PERM_DENY;
+	}
 	/* Exercise 5.8: Your code here. (1/3) */
 	nblock = dir->f_size / BLOCK_SIZE;
 	// Step 2: Iterate through all blocks in the directory.
@@ -668,12 +673,19 @@ int file_create(char *path, struct File **file) {
 	if (r != -E_NOT_FOUND || dir == 0) {
 		return r;
 	}
+	
+	// lab 5-2 extra	
+	if (!(dir->f_mode & FMODE_W)) {
+		return -E_PERM_DENY;
+	}
 
 	if (dir_alloc_file(dir, &f) < 0) {
 		return r;
 	}
 
 	strcpy(f->f_name, name);
+	// lab 5-2 extra
+	f->f_mode = FMODE_ALL;
 	*file = f;
 	return 0;
 }
@@ -787,6 +799,11 @@ int file_remove(char *path) {
 	// Step 1: find the file on the disk.
 	if ((r = walk_path(path, 0, &f, 0)) < 0) {
 		return r;
+	}
+
+	// lab 5-2 extra
+	if (!(f->f_dir->f_mode & FMODE_W)) {
+		return -E_PERM_DENY;
 	}
 
 	// Step 2: truncate it's size to zero.
