@@ -496,7 +496,7 @@ int dir_lookup(struct File *dir, char *name, struct File **file) {
 	u_int nblock;
 	// lab 5-2 extra
 	// 遍历文件夹前首先检查 dir 是否具有权限 FMODE_X，若没有则返回 -E_PERM_DENY
-	if (!(dir->f_mode & FMODE_X)) {
+	if ((dir->f_mode & FMODE_X) != FMODE_X) {
 		return -E_PERM_DENY;
 	}
 	/* Exercise 5.8: Your code here. (1/3) */
@@ -675,7 +675,7 @@ int file_create(char *path, struct File **file) {
 	}
 	
 	// lab 5-2 extra	
-	if (!(dir->f_mode & FMODE_W)) {
+	if ((dir->f_mode & FMODE_W) != FMODE_W) {
 		return -E_PERM_DENY;
 	}
 
@@ -802,7 +802,7 @@ int file_remove(char *path) {
 	}
 
 	// lab 5-2 extra
-	if (!(f->f_dir->f_mode & FMODE_W)) {
+	if ((f->f_dir->f_mode & FMODE_W) != FMODE_W) {
 		return -E_PERM_DENY;
 	}
 
