@@ -50,8 +50,8 @@ void mips_init(u_int argc, char **argv, char **penv, u_int ram_low_size) {
 	env_init();
 
 	// lab3:
-	//ENV_CREATE_PRIORITY(user_bare_loop, 1);
-	//ENV_CREATE_PRIORITY(user_bare_loop, 2);
+	// ENV_CREATE_PRIORITY(user_bare_loop, 1);
+	// ENV_CREATE_PRIORITY(user_bare_loop, 2);
 
 	// lab4:
 	// ENV_CREATE(user_tltest);
@@ -59,10 +59,10 @@ void mips_init(u_int argc, char **argv, char **penv, u_int ram_low_size) {
 	// ENV_CREATE(user_pingpong);
 
 	// lab6:
-	// ENV_CREATE(user_icode);  // This must be the first env!
+	ENV_CREATE(user_icode);  // This must be the first env!
 
 	// lab5:
-	ENV_CREATE(user_fstest);
+	// ENV_CREATE(user_fstest);
 	ENV_CREATE(fs_serv);  // This must be the second env!
 	// ENV_CREATE(user_devtst);
 
