@@ -538,6 +538,10 @@ int sys_set_env_sigaction(u_int envid, int signum, struct sigaction *newact) {
 	return 0;
 }
 
+int sys_sigaction_kill(u_int envid, int sig) {
+	
+}
+
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
@@ -559,6 +563,7 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_read_dev] = sys_read_dev,
 	[SYS_get_env_sigaction] = sys_get_env_sigaction,
 	[SYS_set_env_sigaction] = sys_set_env_sigaction,
+	[SYS_sigaction_kill] = sys_sigaction_kill,
 };
 
 /* Overview:

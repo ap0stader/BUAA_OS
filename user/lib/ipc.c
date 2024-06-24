@@ -55,6 +55,12 @@ int sigaction(int signum, const struct sigaction *newact, struct sigaction *olda
 }
 
 // --- 信号发送函数 ---
+int kill(u_int envid, int sig) {
+	if (!is_legal_signo(sig)) {
+		return -1;
+	}
+	return syscall_sigaction_kill(envid, sig);
+}
 
 // --- 信号集处理函数 ---
 int sigemptyset(sigset_t *__set) {

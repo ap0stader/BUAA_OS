@@ -83,3 +83,7 @@ int syscall_get_env_sigaction(u_int envid, int signum, struct sigaction *oldact)
 int syscall_set_env_sigaction(u_int envid, int signum, struct sigaction *newact) {
 	return msyscall(SYS_set_env_sigaction, envid, signum, newact);
 }
+
+int syscall_sigaction_kill(u_int envid, int sig) {
+	return msyscall(SYS_sigaction_kill, envid, sig);
+}
