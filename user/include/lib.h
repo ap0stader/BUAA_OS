@@ -140,6 +140,7 @@ int sync(void);
 // challenge-sigaction
 // 使用32位表示MOS所需要处理的[1,32]信号掩码
 // 对应位为1表示阻塞，为0表示未被阻塞
+// 注意第 i 位表示的信号为 i+1
 typedef struct sigset_t {
     uint32_t sig;
 } sigset_t;

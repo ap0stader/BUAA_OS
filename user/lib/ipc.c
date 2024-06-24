@@ -37,3 +37,95 @@ u_int ipc_recv(u_int *whom, void *dstva, u_int *perm) {
 
 	return env->env_ipc_value;
 }
+
+// challenge-sigaction
+// --- 信号注册函数 ---
+
+// --- 信号发送函数 ---
+
+// --- 信号集处理函数 ---
+static inline int is_legal_signo(int __signo) {
+    return 1 <= __signo && __signo <= 32;
+}
+
+static inline uint32_t signo2mask(int __signo) {
+	return (uint32_t)(1 << (__signo - 1));
+}
+
+int sigemptyset(sigset_t *__set) {
+    if (__set != NULL) {
+        __set->sig = (uint32_t)0x00000000;
+        return 0;
+    } else {
+        return -1;
+        // return -E_UNSPECIFIED;
+    }
+}
+
+int sigfillset(sigset_t *__set) {
+    if (__set != NULL) {
+        __set->sig = (uint32_t)0xFFFFFFFF;
+        return 0;
+    } else {
+        return -1;
+        // return -E_UNSPECIFIED;
+    }
+}
+
+int sigaddset(sigset_t *__set, int __signo) {
+    if (__set != NULL && is_legal_signo(__signo)) {
+        __set->sig |= signo2mask(__signo);
+        return 0;
+    } else {
+        return -1;
+        // return -E_UNSPECIFIED;
+    }
+}
+
+int sigdelset(sigset_t *__set, int __signo) {
+    if (__set != NULL && is_legal_signo(__signo)) {
+        __set->sig &= ~signo2mask(__signo);
+		return 0;
+    } else {
+		return -1;
+		// return -E_UNSPECIFIED;
+	}
+}
+
+int sigismember(const sigset_t *__set, int __signo) {
+	if (__set != NULL && is_legal_signo(__signo)) {
+		return __set->sig & signo2mask(__signo) ? 1 : 0;
+	} else {
+		return -1;
+		// return -E_UNSPECIFIED;
+	}
+}
+
+int sigisemptyset(const sigset_t *__set) {
+	if (__set != NULL) {
+		return __set->sig == (uint32_t)0x00000000 ? 1 : 0;
+	} else {
+		return -1;
+		// return -E_UNSPECIFIED;
+	}
+}
+
+int sigandset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
+	if (__set != NULL && __left != NULL && __right != NULL) {
+		__set->sig = __left->sig & __right->sig;
+		return 0;
+	} else {
+		return -1;
+		// return -E_UNSPECIFIED;
+	}
+}
+
+int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
+	if (__set != NULL && __left != NULL && __right != NULL) {
+		__set->sig = __left->sig | __right->sig;
+		return 0;
+	} else {
+		return -1;
+		// return -E_UNSPECIFIED;
+	}
+}
