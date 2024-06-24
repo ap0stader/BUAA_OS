@@ -148,7 +148,6 @@ int sync(void);
 // - oldact:如果oldact不为NULL，将该信号之前的sigaction结构体复制到oldact中
 int sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact);
 
-
 // --- 信号发送函数 ---
 // - envid:向envid进程发送信号
 //         当envid为0时，代表向自身发送信号

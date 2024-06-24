@@ -47,4 +47,10 @@ struct sigaction {
 4. 信号的执行是否能被打断只与此时信号的屏蔽集有关
    优先级只会影响当有多种信号时，所需要执行信号的选择
 */
+
+// 是否是合法的信号
+#define is_legal_signo(__signo) (1 <= (__signo) && (__signo) <= 32)
+// 生成信号对应的掩码
+#define signo2mask(__signo) ((uint32_t)(1 << ((__signo) - 1)))
+
 #endif

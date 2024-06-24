@@ -43,7 +43,9 @@ struct Env {
 	u_int env_runs; // number of times we've been env_run'ed
 
 	// challenge-sigaction
-	
+	struct sigaction env_sigaction[32];
+	sigset_t env_sigprocmask;
+	sigset_t env_sigpending;
 };
 
 LIST_HEAD(Env_list, Env);

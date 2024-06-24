@@ -40,18 +40,23 @@ u_int ipc_recv(u_int *whom, void *dstva, u_int *perm) {
 
 // challenge-sigaction
 // --- 信号注册函数 ---
+int sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact) {
+	if (!is_legal_signo(signum)) {
+		return -1;
+		// return -E_UNSPECIFIED;
+	}
+	if (oldact != NULL) {
+		try(syscall_get_env_sigaction(0, signum, oldact));
+	}
+	if (newact != NULL) {
+		try(syscall_set_env_sigaction(0, signum, newact));
+	}
+	return 0;
+}
 
 // --- 信号发送函数 ---
 
 // --- 信号集处理函数 ---
-static inline int is_legal_signo(int __signo) {
-    return 1 <= __signo && __signo <= 32;
-}
-
-static inline uint32_t signo2mask(int __signo) {
-	return (uint32_t)(1 << (__signo - 1));
-}
-
 int sigemptyset(sigset_t *__set) {
     if (__set != NULL) {
         __set->sig = (uint32_t)0x00000000;

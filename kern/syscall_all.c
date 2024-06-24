@@ -513,6 +513,31 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 	return 0;
 }
 
+// challenge-sigaction
+int sys_get_env_sigaction(u_int envid, int signum, struct sigaction *oldact) {
+	struct Env *e;
+	if(!is_legal_signo(signum)) {
+		return -1;
+	}
+	if (oldact != NULL) {
+		try(envid2env(envid, &e, 1));
+		*oldact = e->env_sigaction[signum - 1];
+	}
+	return 0;
+}
+
+int sys_set_env_sigaction(u_int envid, int signum, struct sigaction *newact) {
+	struct Env *e;
+	if(!is_legal_signo(signum)) {
+		return -1;
+	}
+	if (newact != NULL) {
+		try(envid2env(envid, &e, 1));
+		e->env_sigaction[signum - 1] = *newact;
+	}
+	return 0;
+}
+
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
@@ -532,6 +557,8 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_cgetc] = sys_cgetc,
     [SYS_write_dev] = sys_write_dev,
     [SYS_read_dev] = sys_read_dev,
+	[SYS_get_env_sigaction] = sys_get_env_sigaction,
+	[SYS_set_env_sigaction] = sys_set_env_sigaction,
 };
 
 /* Overview:
