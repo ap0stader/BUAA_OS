@@ -184,55 +184,56 @@ struct sigaction {
 
 // !!需要实现的函数的某些函数的具体功能可能需要由系统调用实现!!
 // --- 信号注册函数 ---
-int sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact);
 // - signum:需要设置的信号编号
 //          当收到编号大于32的信号时直接返回异常码-1(-E_UNSPECIFIED)
 // - newact:如果newact不为NULL，为signum设置sigaction结构体
 // - oldact:如果oldact不为NULL，将该信号之前的sigaction结构体复制到oldact中
+int sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact);
+
 
 // --- 信号发送函数 ---
-int kill(u_int envid, int sig);
 // - envid:向envid进程发送信号
 //         当envid为0时，代表向自身发送信号
 //         当envid对应进程不存在，返回异常码-1(-E_UNSPECIFIED)
 // - sig:要发送的信号编号
 //       当sig不符合定义范围时，返回异常码-1
 // 注意：一些信号通常并不通过kill函数发出，而是由内核发出，不需要考虑通过kill函数发出这些信号的情况
+int kill(u_int envid, int sig);
 
 // --- 信号集处理函数 ---
-int sigemptyset(sigset_t *__set);
 // 清空参数中的__set掩码，全清0
+int sigemptyset(sigset_t *__set);
 
-int sigfillset(sigset_t *__set);
 // 将参数中的__set掩码填满，全置1
+int sigfillset(sigset_t *__set);
 
-int sigaddset(sigset_t *__set, int __signo);
 // 向__set信号集中添加一个信号__signo，如果操作成功，__set将包含该信号。置位为1
+int sigaddset(sigset_t *__set, int __signo);
 
-int sigdelset(sigset_t *__set, int __signo);
 // 从__set信号集中删除一个信号__signo。如果操作成功，__set将不再包含该信号。置位为0
+int sigdelset(sigset_t *__set, int __signo);
 
+// 检查信号__signo是否是__set信号集的成员。如果是，返回1；如果不是，返回0
 int sigismember(const sigset_t *__set, int __signo);
-// 检查信号__signo是否是__set信号集的成员。如果是，返回1；如果不是，返回0。
 
+// 检查信号集__set是否为空。如果为空，返回1；如果不为空，返回0
 int sigisemptyset(const sigset_t *__set);
-// 检查信号集__set是否为空。如果为空，返回1；如果不为空，返回0。
 
+// 计算两个信号集__left和__right的交集，并将结果存储在__set中
 int sigandset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right);
-// 计算两个信号集__left和__right的交集，并将结果存储在__set中。
 
+// 计算两个信号集__left和__right的并集，并将结果存储在__set中
 int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right);
-// 计算两个信号集__left和__right的并集，并将结果存储在__set中。
 
-int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset);
-// 根据__how的值更改【当前进程】的信号屏蔽字。
+// 根据__how的值更改【当前进程】的信号屏蔽字
 // __set是要应用的新掩码
 // __oset（如果非NULL）则保存旧的信号屏蔽字
 // __how:SIG_BLOCK-添加__set到当前掩码
 //       SIG_UNBLOCK-从当前掩码中移除__set
 //       SIG_SETMASK-设置当前掩码为__set
+int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset);
 
-int sigpending(sigset_t *__set);
 // 获取当前被阻塞且未处理的信号集，并将其存储在__set中
+int sigpending(sigset_t *__set);
 
 #endif
