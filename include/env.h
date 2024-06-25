@@ -54,7 +54,7 @@ struct Env {
 	// 用于在信号处理完成之后恢复掩码只信号处理之前的状态
 	sigset_t env_sigprocmask_stack[64];
 	// 以上两个栈的栈顶的指针
-	int env_sigaction_stack_top;
+	int env_sigprocmask_stack_top;
 
 	// 当前进程的用户态信号处理程序入口
 	u_int env_user_sigaction_entry;

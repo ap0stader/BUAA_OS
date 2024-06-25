@@ -244,8 +244,8 @@ int sys_exofork(void) {
 	memcpy(&e->env_sigaction, &curenv->env_sigaction, 32 * sizeof(struct sigaction));
 	e->env_sigprocmask = curenv->env_sigprocmask;
 	e->env_sigpending = curenv->env_sigpending;
-	memcpy(&e->env_sigprocmask_stack, &curenv->env_sigprocmask_stack, 256 * sizeof(sigset_t));
-	e->env_sigaction_stack_top = curenv->env_sigaction_stack_top;
+	memcpy(&e->env_sigprocmask_stack, &curenv->env_sigprocmask_stack, 64 * sizeof(sigset_t));
+	e->env_sigprocmask_stack_top = curenv->env_sigprocmask_stack_top;
 	e->env_user_sigaction_entry = curenv->env_user_sigaction_entry;
 	/* Step 2: Copy the current Trapframe below 'KSTACKTOP' to the new env's 'env_tf'. */
 	/* Exercise 4.9: Your code here. (2/4) */
@@ -555,7 +555,7 @@ int sys_sigaction_finish(struct Trapframe *tf) {
 	if (is_illegal_va_range((u_long)tf, sizeof *tf)) {
 		return -E_INVAL;
 	}
-	curenv->env_sigprocmask = curenv->env_sigprocmask_stack[curenv->env_sigaction_stack_top--];
+	curenv->env_sigprocmask = curenv->env_sigprocmask_stack[curenv->env_sigprocmask_stack_top--];
 	*((struct Trapframe *)KSTACKTOP - 1) = *tf;
 	// return `tf->regs[2]` instead of 0, because return value overrides regs[2] on
 	// current trapframe.

@@ -258,8 +258,8 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	memset(&e->env_sigaction, 0, 32 * sizeof(struct sigaction));
 	e->env_sigprocmask.sig = (uint32_t)0x00000000;
 	e->env_sigpending.sig = (uint32_t)0x00000000;
-	memset(&e->env_sigprocmask_stack, 0, 256 * sizeof(sigset_t));
-	e->env_sigaction_stack_top = -1;
+	memset(&e->env_sigprocmask_stack, 0, 64 * sizeof(sigset_t));
+	e->env_sigprocmask_stack_top = -1;
 	e->env_user_sigaction_entry = 0;
 	e->env_start_sigkill = 0;
 	/* Exercise 3.4: Your code here. (3/4) */
