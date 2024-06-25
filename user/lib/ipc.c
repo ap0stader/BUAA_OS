@@ -45,14 +45,18 @@ void __attribute__((noreturn)) sigaction_entry(struct Trapframe *tf, int signo, 
 		exit();
 	} else if (sa_handler != NULL) {
 		sa_handler(signo);
+		int r = syscall_sigaction_finish(tf);
+		user_panic("syscall_sigaction_finish returned %d", r);
 	} else if (signo == SIGINT || signo == SIGILL || signo == SIGSEGV) {
 		// SIGINT/SIGILL/SIGSEGV默认处理是停止进程
 		exit();
+	} else {
 		// 其他的默认处理是忽略
+		tf->cp0_epc += 4;
+		int r = syscall_sigaction_finish(tf);
+		user_panic("syscall_sigaction_finish returned %d", r);
 	}
-	int r = syscall_sigaction_finish(tf);
-	user_panic("syscall_sigaction_finish returned %d", r);
-}
+}	
 
 // --- 信号注册函数 ---
 int sigaction(int signo, const struct sigaction *newact, struct sigaction *oldact) {

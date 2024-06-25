@@ -561,9 +561,6 @@ int sys_sigaction_finish(struct Trapframe *tf) {
 	curenv->env_sigaction_stack_top--;
 
 	*((struct Trapframe *)KSTACKTOP - 1) = *tf;
-	if (finish_signo == SIGSYS) {
-		curenv->env_tf.cp0_epc += 4;
-	}
 	// return `tf->regs[2]` instead of 0, because return value overrides regs[2] on
 	// current trapframe.
 	return tf->regs[2];
