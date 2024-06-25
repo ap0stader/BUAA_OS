@@ -39,7 +39,7 @@ struct sigaction {
 #define SIGCHLD 17
 // 系统调用号未定义	忽略
 #define SIGSYS 31
-// 其余[1,32]内的signum编号的默认处理动作为忽略
+// 其余[1,32]内的signo默认处理动作为忽略
 
 /*
 注意：
@@ -137,7 +137,19 @@ int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
 	}
 }
 
+enum {
+    SIG_BLOCK, //添加__set到当前掩码
+    SIG_UNBLOCK, //从当前掩码中移除__set
+    SIG_SETMASK, //设置当前掩码为__set
+};
+
+// 内核中调整当前进程的procmask
+int change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset);
+
 // 内核中发送信号到某个进程
-int sigaction_kill(u_int envid, int sig);
+int sigaction_kill(u_int envid, int signo);
+
+// 用户态信号处理程序入口
+void __attribute__((noreturn)) sigaction_entry(struct Trapframe *tf, int signo, void (*sa_handler)(int));
 
 #endif

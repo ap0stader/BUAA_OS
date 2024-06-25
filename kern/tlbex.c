@@ -121,7 +121,10 @@ void do_sigaction(struct Trapframe *tf) {
 
 	if (process_signo != 0) {
 		curenv->env_sigaction_stack_top++;
-		curenv->env_singal_stack[curenv->env_sigaction_stack_top] = process_signo;
+		if (curenv->env_sigaction_stack_top >= 256) {
+			panic("Env sigaction stack overflow");
+		}
+		curenv->env_signo_stack[curenv->env_sigaction_stack_top] = process_signo;
 		curenv->env_procmask_stack[curenv->env_sigaction_stack_top] = curenv->env_sigprocmask;
 
 		struct Trapframe tmp_tf = *tf;
@@ -135,7 +138,7 @@ void do_sigaction(struct Trapframe *tf) {
 		if (curenv->env_user_sigaction_entry) {
 			tf->regs[4] = tf->regs[29];
 			tf->regs[5] = (u_int)process_signo;
-			tf->regs[5] = (u_int)curenv->env_sigaction[process_signo - 1].sa_handler;
+			tf->regs[6] = (u_int)curenv->env_sigaction[process_signo - 1].sa_handler;
 			tf->regs[29] -= sizeof(tf->regs[4]);
 			tf->regs[29] -= sizeof(tf->regs[5]);
 			tf->regs[29] -= sizeof(tf->regs[6]);

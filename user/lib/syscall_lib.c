@@ -76,14 +76,30 @@ int syscall_read_dev(void *va, u_int dev, u_int size) {
 }
 
 // challenge-sigaction
-int syscall_get_env_sigaction(u_int envid, int signum, struct sigaction *oldact) {
-	return msyscall(SYS_get_env_sigaction, envid, signum, oldact);
+int syscall_get_env_sigaction(u_int envid, int signo, struct sigaction *oldact) {
+	return msyscall(SYS_get_env_sigaction, envid, signo, oldact);
 }
 
-int syscall_set_env_sigaction(u_int envid, int signum, struct sigaction *newact) {
-	return msyscall(SYS_set_env_sigaction, envid, signum, newact);
+int syscall_set_env_sigaction(u_int envid, int signo, struct sigaction *newact) {
+	return msyscall(SYS_set_env_sigaction, envid, signo, newact);
 }
 
-int syscall_sigaction_kill(u_int envid, int sig) {
-	return msyscall(SYS_sigaction_kill, envid, sig);
+int syscall_sigaction_kill(u_int envid, int signo) {
+	return msyscall(SYS_sigaction_kill, envid, signo);
+}
+
+int syscall_sigaction_finish(struct Trapframe *tf) {
+	return msyscall(SYS_sigaction_finish, tf);
+}
+
+int syscall_change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset) {
+	return msyscall(SYS_change_curenv_sigprocmask, __how, __set, __oset);
+}
+
+int syscall_get_curenv_sigpending(sigset_t *__set) {
+	return msyscall(SYS_get_curenv_sigpending, __set);
+}
+
+int syscall_set_curenv_sigaction_entry(void (*func)(struct Trapframe *, int, void (*)(int))) {
+	return msyscall(SYS_set_curenv_sigaction_entry, func);
 }

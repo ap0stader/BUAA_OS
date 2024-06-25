@@ -140,11 +140,11 @@ int sync(void);
 // challenge-sigaction
 // !!需要实现的函数的某些函数的具体功能可能需要由系统调用实现!!
 // --- 信号注册函数 ---
-// - signum:需要设置的信号编号
+// - signo:需要设置的信号编号
 //          当收到编号大于32的信号时直接返回异常码-1(-E_UNSPECIFIED)
-// - newact:如果newact不为NULL，为signum设置sigaction结构体
+// - newact:signo
 // - oldact:如果oldact不为NULL，将该信号之前的sigaction结构体复制到oldact中
-int sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact);
+int sigaction(int signo, const struct sigaction *newact, struct sigaction *oldact);
 
 // --- 信号发送函数 ---
 // - envid:向envid进程发送信号
@@ -153,11 +153,11 @@ int sigaction(int signum, const struct sigaction *newact, struct sigaction *olda
 // - sig:要发送的信号编号
 //       当sig不符合定义范围时，返回异常码-1
 // 注意：一些信号通常并不通过kill函数发出，而是由内核发出，不需要考虑通过kill函数发出这些信号的情况
-int kill(u_int envid, int sig);
+int kill(u_int envid, int signo);
 
 // --- 信号集处理函数 ---
 // 根据__how的值更改【当前进程】的信号屏蔽字
-// __set是要应用的新掩码
+// __set是要应用的新掩码（如果为NULL，则不做任何修改）
 // __oset（如果非NULL）则保存旧的信号屏蔽字
 // __how:SIG_BLOCK-添加__set到当前掩码
 //       SIG_UNBLOCK-从当前掩码中移除__set
@@ -166,5 +166,14 @@ int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset);
 
 // 获取当前被阻塞且未处理的信号集，并将其存储在__set中
 int sigpending(sigset_t *__set);
+
+// --- syscalls ---
+int syscall_get_env_sigaction(u_int envid, int signo, struct sigaction *oldact);
+int syscall_set_env_sigaction(u_int envid, int signo, struct sigaction *newact);
+int syscall_sigaction_kill(u_int envid, int signo);
+int syscall_sigaction_finish(struct Trapframe *tf);
+int syscall_change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset);
+int syscall_get_curenv_sigpending(sigset_t *__set);
+int syscall_set_curenv_sigaction_entry(void (*func)(struct Trapframe *, int, void (*)(int)));
 
 #endif

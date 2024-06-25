@@ -253,6 +253,15 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	 */
 	e->env_user_tlb_mod_entry = 0; // for lab4
 	e->env_runs = 0;	       // for lab6
+	// challenge-sigaction
+	// 清空所有的内容
+	memset(&e->env_sigaction, 0, 32 * sizeof(struct sigaction));
+	sigemptyset(&e->env_sigprocmask);
+	sigemptyset(&e->env_sigkill);
+	memset(&e->env_signo_stack, 0, 256 * sizeof(int));
+	memset(&e->env_procmask_stack, 0, 256 * sizeof(sigset_t));
+	e->env_sigaction_stack_top = -1;
+	e->env_user_sigaction_entry = 0;
 	/* Exercise 3.4: Your code here. (3/4) */
 	e->env_id = mkenvid(e);
 	try(asid_alloc(&e->env_asid));
@@ -482,8 +491,13 @@ void env_run(struct Env *e) {
 	env_pop_tf(&curenv->env_tf, curenv->env_asid);
 }
 
-int sigaction_kill(u_int envid, int sig) {
-	
+// challenge-sigaction
+int change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset) {
+
+}
+
+int sigaction_kill(u_int envid, int signo) {
+
 }
 
 void env_check() {

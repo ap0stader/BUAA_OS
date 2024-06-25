@@ -240,6 +240,9 @@ int sys_exofork(void) {
 	/* Step 1: Allocate a new env using 'env_alloc'. */
 	/* Exercise 4.9: Your code here. (1/4) */
 	try(env_alloc(&e, curenv->env_id));
+	// challenge-sigaction
+	memcpy(&e->env_sigaction, &curenv->env_sigaction, 32 * sizeof(struct sigaction));
+	e->env_sigprocmask = curenv->env_sigprocmask;
 	/* Step 2: Copy the current Trapframe below 'KSTACKTOP' to the new env's 'env_tf'. */
 	/* Exercise 4.9: Your code here. (2/4) */
 	e->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
@@ -514,32 +517,59 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 }
 
 // challenge-sigaction
-int sys_get_env_sigaction(u_int envid, int signum, struct sigaction *oldact) {
+int sys_get_env_sigaction(u_int envid, int signo, struct sigaction *oldact) {
 	struct Env *e;
-	if(!is_legal_signo(signum)) {
+
+	if(!is_legal_signo(signo)) {
 		return -1;
 	}
 	if (oldact != NULL) {
 		try(envid2env(envid, &e, 1));
-		*oldact = e->env_sigaction[signum - 1];
+		*oldact = e->env_sigaction[signo - 1];
 	}
 	return 0;
 }
 
-int sys_set_env_sigaction(u_int envid, int signum, struct sigaction *newact) {
+int sys_set_env_sigaction(u_int envid, int signo, struct sigaction *newact) {
 	struct Env *e;
-	if(!is_legal_signo(signum)) {
+
+	if(!is_legal_signo(signo)) {
 		return -1;
 	}
 	if (newact != NULL) {
 		try(envid2env(envid, &e, 1));
-		e->env_sigaction[signum - 1] = *newact;
+		e->env_sigaction[signo - 1] = *newact;
 	}
 	return 0;
 }
 
-int sys_sigaction_kill(u_int envid, int sig) {
-	return sigaction_kill(envid, sig);
+int sys_sigaction_kill(u_int envid, int signo) {
+	return sigaction_kill(envid, signo);
+}
+
+int sys_sigaction_finish(struct Trapframe *tf) {
+
+}
+
+int sys_change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset) {
+	return change_curenv_sigprocmask(__how, __set, __oset);
+}
+
+int sys_get_curenv_sigpending(sigset_t *__set) {
+	if (__set == NULL) {
+		return -1;
+	} else {
+		// SIGKILL不可被阻塞
+		__set->sig = curenv->env_sigkill.sig & curenv->env_sigprocmask.sig & ~signo2mask(SIGKILL);
+		return 0;
+	}
+}
+
+int sys_set_curenv_sigaction_entry(u_int func) {
+	struct Env *env;
+
+	curenv->env_user_sigaction_entry = func;
+	return 0;
 }
 
 void *syscall_table[MAX_SYSNO] = {
@@ -564,6 +594,10 @@ void *syscall_table[MAX_SYSNO] = {
 	[SYS_get_env_sigaction] = sys_get_env_sigaction,
 	[SYS_set_env_sigaction] = sys_set_env_sigaction,
 	[SYS_sigaction_kill] = sys_sigaction_kill,
+	[SYS_sigaction_finish] = sys_sigaction_finish,
+	[SYS_change_curenv_sigprocmask] = sys_change_curenv_sigprocmask,
+	[SYS_get_curenv_sigpending] = sys_get_curenv_sigpending,
+	[SYS_set_curenv_sigaction_entry] = sys_set_curenv_sigaction_entry,
 };
 
 /* Overview:

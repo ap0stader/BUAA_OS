@@ -25,6 +25,10 @@ enum {
 	SYS_get_env_sigaction,
 	SYS_set_env_sigaction,
 	SYS_sigaction_kill,
+	SYS_sigaction_finish,
+	SYS_change_curenv_sigprocmask,
+	SYS_get_curenv_sigpending,
+	SYS_set_curenv_sigaction_entry,
 	MAX_SYSNO,
 };
 
