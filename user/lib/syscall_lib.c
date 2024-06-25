@@ -80,7 +80,7 @@ int syscall_get_env_sigaction(u_int envid, int signo, struct sigaction *oldact) 
 	return msyscall(SYS_get_env_sigaction, envid, signo, oldact);
 }
 
-int syscall_set_env_sigaction(u_int envid, int signo, struct sigaction *newact) {
+int syscall_set_env_sigaction(u_int envid, int signo, const struct sigaction *newact) {
 	return msyscall(SYS_set_env_sigaction, envid, signo, newact);
 }
 

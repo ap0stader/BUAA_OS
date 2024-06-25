@@ -579,8 +579,6 @@ int sys_get_curenv_sigpending(sigset_t *__set) {
 }
 
 int sys_set_curenv_sigaction_entry(u_int func) {
-	struct Env *env;
-
 	curenv->env_user_sigaction_entry = func;
 	return 0;
 }

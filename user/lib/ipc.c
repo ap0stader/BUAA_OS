@@ -77,6 +77,84 @@ int kill(u_int envid, int signo) {
 }
 
 // --- 信号集处理函数 ---
+// 清空参数中的__set掩码，全清0
+int sigemptyset(sigset_t *__set) {
+    if (__set != NULL) {
+        __set->sig = (uint32_t)0x00000000;
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
+// 将参数中的__set掩码填满，全置1
+int sigfillset(sigset_t *__set) {
+    if (__set != NULL) {
+        __set->sig = (uint32_t)0xFFFFFFFF;
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
+// 向__set信号集中添加一个信号__signo，如果操作成功，__set将包含该信号。置位为1
+int sigaddset(sigset_t *__set, int __signo) {
+    if (__set != NULL && is_legal_signo(__signo)) {
+        __set->sig |= signo2mask(__signo);
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
+// 从__set信号集中删除一个信号__signo。如果操作成功，__set将不再包含该信号。置位为0
+int sigdelset(sigset_t *__set, int __signo) {
+    if (__set != NULL && is_legal_signo(__signo)) {
+        __set->sig &= ~signo2mask(__signo);
+		return 0;
+    } else {
+		return -1;
+	}
+}
+
+// 检查信号__signo是否是__set信号集的成员。如果是，返回1；如果不是，返回0
+int sigismember(const sigset_t *__set, int __signo) {
+	if (__set != NULL && is_legal_signo(__signo)) {
+		return __set->sig & signo2mask(__signo) ? 1 : 0;
+	} else {
+		return -1;
+	}
+}
+
+// 检查信号集__set是否为空。如果为空，返回1；如果不为空，返回0
+int sigisemptyset(const sigset_t *__set) {
+	if (__set != NULL) {
+		return __set->sig == (uint32_t)0x00000000 ? 1 : 0;
+	} else {
+		return -1;
+	}
+}
+
+// 计算两个信号集__left和__right的交集，并将结果存储在__set中
+int sigandset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
+	if (__set != NULL && __left != NULL && __right != NULL) {
+		__set->sig = __left->sig & __right->sig;
+		return 0;
+	} else {
+		return -1;
+	}
+}
+
+// 计算两个信号集__left和__right的并集，并将结果存储在__set中
+int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
+	if (__set != NULL && __left != NULL && __right != NULL) {
+		__set->sig = __left->sig | __right->sig;
+		return 0;
+	} else {
+		return -1;
+	}
+}
+
 int sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset) {
 	return syscall_change_curenv_sigprocmask(__how, __set, __oset);
 }

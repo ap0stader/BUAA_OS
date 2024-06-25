@@ -256,8 +256,8 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	// challenge-sigaction
 	// 清空所有的内容
 	memset(&e->env_sigaction, 0, 32 * sizeof(struct sigaction));
-	sigemptyset(&e->env_sigprocmask);
-	sigemptyset(&e->env_sigkill);
+	e->env_sigprocmask.sig = (uint32_t)0x00000000;
+	e->env_sigkill.sig = (uint32_t)0x00000000;
 	memset(&e->env_signo_stack, 0, 256 * sizeof(int));
 	memset(&e->env_sigprocmask_stack, 0, 256 * sizeof(sigset_t));
 	e->env_sigaction_stack_top = -1;
