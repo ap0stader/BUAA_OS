@@ -28,6 +28,8 @@ timer_irq:
 	j       schedule
 END(handle_int)
 
+BUILD_HANDLER ri do_ri
+
 BUILD_HANDLER tlb do_tlb_refill
 
 #if !defined(LAB) || LAB >= 4

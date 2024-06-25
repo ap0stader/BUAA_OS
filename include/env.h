@@ -43,9 +43,23 @@ struct Env {
 	u_int env_runs; // number of times we've been env_run'ed
 
 	// challenge-sigaction
+	// 保存各个信号的梳理方式及其屏蔽的掩码
+	// !!!使用信号编号取用时务必-1
 	struct sigaction env_sigaction[32];
+	// 当前进程的屏蔽的掩码
 	sigset_t env_sigprocmask;
-	sigset_t env_sigpending;
+	// 当前进程收到的信号
+	sigset_t env_sigkill;
+	// 当前进程的用户态信号处理程序入口
+	u_int env_user_sigaction_entry;
+	// 当前进程的信号处理栈，栈顶表示当前正在处理的信号
+	// 用于在信号处理完成之后判断当前处理的信号
+	int env_singal_stack[256];
+	// 当前进程的掩码栈，栈顶表示当前正在处理的信号处理之前的掩码的状态
+	// 用于在信号处理完成之后恢复掩码只信号处理之前的状态
+	sigset_t env_procmask_stack[256];
+	// 以上两个栈的栈顶的指针
+	int env_sigaction_stack_top;
 };
 
 LIST_HEAD(Env_list, Env);

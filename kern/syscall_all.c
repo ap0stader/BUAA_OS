@@ -539,7 +539,7 @@ int sys_set_env_sigaction(u_int envid, int signum, struct sigaction *newact) {
 }
 
 int sys_sigaction_kill(u_int envid, int sig) {
-	
+	return sigaction_kill(envid, sig);
 }
 
 void *syscall_table[MAX_SYSNO] = {
@@ -580,6 +580,7 @@ void do_syscall(struct Trapframe *tf) {
 	int (*func)(u_int, u_int, u_int, u_int, u_int);
 	int sysno = tf->regs[4];
 	if (sysno < 0 || sysno >= MAX_SYSNO) {
+		sigaction_kill(0, SIGSYS);
 		tf->regs[2] = -E_NO_SYS;
 		return;
 	}

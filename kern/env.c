@@ -407,6 +407,9 @@ void env_free(struct Env *e) {
 	tlb_invalidate(e->env_asid, UVPT + (PDX(UVPT) << PGSHIFT));
 	/* Hint: return the environment to the free list. */
 	e->env_status = ENV_FREE;
+	if (e->env_parent_id != 0) {
+		sigaction_kill(e->env_parent_id, SIGCHLD);
+	}
 	LIST_INSERT_HEAD((&env_free_list), (e), env_link);
 	TAILQ_REMOVE(&env_sched_list, (e), env_sched_link);
 }
@@ -477,6 +480,10 @@ void env_run(struct Env *e) {
 	 */
 	/* Exercise 3.8: Your code here. (2/2) */
 	env_pop_tf(&curenv->env_tf, curenv->env_asid);
+}
+
+int sigaction_kill(u_int envid, int sig) {
+	
 }
 
 void env_check() {

@@ -43,7 +43,6 @@ u_int ipc_recv(u_int *whom, void *dstva, u_int *perm) {
 int sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact) {
 	if (!is_legal_signo(signum)) {
 		return -1;
-		// return -E_UNSPECIFIED;
 	}
 	if (oldact != NULL) {
 		try(syscall_get_env_sigaction(0, signum, oldact));
@@ -60,83 +59,4 @@ int kill(u_int envid, int sig) {
 		return -1;
 	}
 	return syscall_sigaction_kill(envid, sig);
-}
-
-// --- 信号集处理函数 ---
-int sigemptyset(sigset_t *__set) {
-    if (__set != NULL) {
-        __set->sig = (uint32_t)0x00000000;
-        return 0;
-    } else {
-        return -1;
-        // return -E_UNSPECIFIED;
-    }
-}
-
-int sigfillset(sigset_t *__set) {
-    if (__set != NULL) {
-        __set->sig = (uint32_t)0xFFFFFFFF;
-        return 0;
-    } else {
-        return -1;
-        // return -E_UNSPECIFIED;
-    }
-}
-
-int sigaddset(sigset_t *__set, int __signo) {
-    if (__set != NULL && is_legal_signo(__signo)) {
-        __set->sig |= signo2mask(__signo);
-        return 0;
-    } else {
-        return -1;
-        // return -E_UNSPECIFIED;
-    }
-}
-
-int sigdelset(sigset_t *__set, int __signo) {
-    if (__set != NULL && is_legal_signo(__signo)) {
-        __set->sig &= ~signo2mask(__signo);
-		return 0;
-    } else {
-		return -1;
-		// return -E_UNSPECIFIED;
-	}
-}
-
-int sigismember(const sigset_t *__set, int __signo) {
-	if (__set != NULL && is_legal_signo(__signo)) {
-		return __set->sig & signo2mask(__signo) ? 1 : 0;
-	} else {
-		return -1;
-		// return -E_UNSPECIFIED;
-	}
-}
-
-int sigisemptyset(const sigset_t *__set) {
-	if (__set != NULL) {
-		return __set->sig == (uint32_t)0x00000000 ? 1 : 0;
-	} else {
-		return -1;
-		// return -E_UNSPECIFIED;
-	}
-}
-
-int sigandset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
-	if (__set != NULL && __left != NULL && __right != NULL) {
-		__set->sig = __left->sig & __right->sig;
-		return 0;
-	} else {
-		return -1;
-		// return -E_UNSPECIFIED;
-	}
-}
-
-int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
-	if (__set != NULL && __left != NULL && __right != NULL) {
-		__set->sig = __left->sig | __right->sig;
-		return 0;
-	} else {
-		return -1;
-		// return -E_UNSPECIFIED;
-	}
 }

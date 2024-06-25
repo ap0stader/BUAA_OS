@@ -19,7 +19,8 @@ static void passive_alloc(u_int va, Pde *pgdir, u_int asid) {
 	struct Page *p = NULL;
 
 	if (va < UTEMP) {
-		panic("address too low");
+		sigaction_kill(0, SIGSEGV);
+		// panic("address too low");
 	}
 
 	if (va >= USTACKTOP && va < USTACKTOP + PAGE_SIZE) {
@@ -85,8 +86,7 @@ void do_tlb_mod(struct Trapframe *tf) {
 	}
 	tf->regs[29] -= sizeof(struct Trapframe);
 	*(struct Trapframe *)tf->regs[29] = tmp_tf;
-	Pte *pte;
-	page_lookup(cur_pgdir, tf->cp0_badvaddr, &pte);
+	// Removed useless codes
 	if (curenv->env_user_tlb_mod_entry) {
 		tf->regs[4] = tf->regs[29];
 		tf->regs[29] -= sizeof(tf->regs[4]);
@@ -98,3 +98,51 @@ void do_tlb_mod(struct Trapframe *tf) {
 	}
 }
 #endif
+
+// challenge-sigaction
+void do_sigaction(struct Trapframe *tf) {
+	int process_signo = 0;
+	// 获取当前未被屏蔽的等待处理的信号
+	// 对应位为1表示阻塞，为0表示未被阻塞，所以需要取反
+	uint32_t unproc_signo = curenv->env_sigkill.sig & ~curenv->env_sigprocmask.sig;
+	// 获取当前需要处理的信号
+	if (curenv->env_sigkill.sig & signo2mask(SIGKILL)) {
+		// 最优先考虑SIGKILL
+		process_signo = SIGKILL;
+	} else if (unproc_signo) {
+		for (int i = MINSIGNO; i <= MAXSIGNO; i++) {
+			// 信号越小，优先级越高
+			if (unproc_signo & signo2mask(i)) {
+				process_signo = i;
+				break;
+			}
+		}
+	}
+
+	if (process_signo != 0) {
+		curenv->env_sigaction_stack_top++;
+		curenv->env_singal_stack[curenv->env_sigaction_stack_top] = process_signo;
+		curenv->env_procmask_stack[curenv->env_sigaction_stack_top] = curenv->env_sigprocmask;
+
+		struct Trapframe tmp_tf = *tf;
+		// 复制到用户的异常处理栈保存以允许异常重入
+		if (tf->regs[29] < UXSTACKTOP || tf->regs[29] >= UXSTACKTOP) {
+			tf->regs[29] = UXSTACKTOP;
+		}
+		tf->regs[29] -= sizeof(struct Trapframe);
+		*(struct Trapframe *)tf->regs[29] = tmp_tf;
+
+		if (curenv->env_user_sigaction_entry) {
+			tf->regs[4] = tf->regs[29];
+			tf->regs[5] = (u_int)process_signo;
+			tf->regs[5] = (u_int)curenv->env_sigaction[process_signo - 1].sa_handler;
+			tf->regs[29] -= sizeof(tf->regs[4]);
+			tf->regs[29] -= sizeof(tf->regs[5]);
+			tf->regs[29] -= sizeof(tf->regs[6]);
+
+			tf->cp0_epc = curenv->env_user_sigaction_entry;
+		} else {
+			panic("Sigaction but no user handler registered");
+		}
+	}
+}

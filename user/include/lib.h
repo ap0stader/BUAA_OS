@@ -7,8 +7,6 @@
 #include <pmap.h>
 #include <syscall.h>
 #include <trap.h>
-// challenge-sigaction
-#include <sigaction.h>
 
 #define vpt ((const volatile Pte *)UVPT)
 #define vpd ((const volatile Pde *)(UVPT + (PDX(UVPT) << PGSHIFT)))
@@ -158,30 +156,6 @@ int sigaction(int signum, const struct sigaction *newact, struct sigaction *olda
 int kill(u_int envid, int sig);
 
 // --- 信号集处理函数 ---
-// 清空参数中的__set掩码，全清0
-int sigemptyset(sigset_t *__set);
-
-// 将参数中的__set掩码填满，全置1
-int sigfillset(sigset_t *__set);
-
-// 向__set信号集中添加一个信号__signo，如果操作成功，__set将包含该信号。置位为1
-int sigaddset(sigset_t *__set, int __signo);
-
-// 从__set信号集中删除一个信号__signo。如果操作成功，__set将不再包含该信号。置位为0
-int sigdelset(sigset_t *__set, int __signo);
-
-// 检查信号__signo是否是__set信号集的成员。如果是，返回1；如果不是，返回0
-int sigismember(const sigset_t *__set, int __signo);
-
-// 检查信号集__set是否为空。如果为空，返回1；如果不为空，返回0
-int sigisemptyset(const sigset_t *__set);
-
-// 计算两个信号集__left和__right的交集，并将结果存储在__set中
-int sigandset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right);
-
-// 计算两个信号集__left和__right的并集，并将结果存储在__set中
-int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right);
-
 // 根据__how的值更改【当前进程】的信号屏蔽字
 // __set是要应用的新掩码
 // __oset（如果非NULL）则保存旧的信号屏蔽字
