@@ -132,7 +132,7 @@ void do_sigaction(struct Trapframe *tf) {
 
 		struct Trapframe tmp_tf = *tf;
 		// 复制到用户的异常处理栈保存以允许异常重入
-		if (tf->regs[29] < UXSTACKTOP || tf->regs[29] >= UXSTACKTOP) {
+		if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
 			tf->regs[29] = UXSTACKTOP;
 		}
 		tf->regs[29] -= sizeof(struct Trapframe);

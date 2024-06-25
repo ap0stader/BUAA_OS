@@ -522,28 +522,22 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 }
 
 // challenge-sigaction
-int sys_get_env_sigaction(u_int envid, int signo, struct sigaction *oldact) {
-	struct Env *e;
-
+int sys_get_env_sigaction(int signo, struct sigaction *oldact) {
 	if(!is_legal_signo(signo)) {
 		return -1;
 	}
 	if (oldact != NULL) {
-		try(envid2env(envid, &e, 0));
-		*oldact = e->env_sigaction[signo - 1];
+		*oldact = curenv->env_sigaction[signo - 1];
 	}
 	return 0;
 }
 
-int sys_set_env_sigaction(u_int envid, int signo, struct sigaction *newact) {
-	struct Env *e;
-
+int sys_set_env_sigaction(int signo, struct sigaction *newact) {
 	if(!is_legal_signo(signo)) {
 		return -1;
 	}
 	if (newact != NULL) {
-		try(envid2env(envid, &e, 0));
-		e->env_sigaction[signo - 1] = *newact;
+		curenv->env_sigaction[signo - 1] = *newact;
 	}
 	return 0;
 }

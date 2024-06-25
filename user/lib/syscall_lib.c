@@ -76,12 +76,12 @@ int syscall_read_dev(void *va, u_int dev, u_int size) {
 }
 
 // challenge-sigaction
-int syscall_get_env_sigaction(u_int envid, int signo, struct sigaction *oldact) {
-	return msyscall(SYS_get_env_sigaction, envid, signo, oldact);
+int syscall_get_env_sigaction(int signo, struct sigaction *oldact) {
+	return msyscall(SYS_get_env_sigaction, signo, oldact);
 }
 
-int syscall_set_env_sigaction(u_int envid, int signo, const struct sigaction *newact) {
-	return msyscall(SYS_set_env_sigaction, envid, signo, newact);
+int syscall_set_env_sigaction(int signo, const struct sigaction *newact) {
+	return msyscall(SYS_set_env_sigaction, signo, newact);
 }
 
 int syscall_sigaction_kill(u_int envid, int signo) {

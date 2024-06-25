@@ -66,10 +66,10 @@ int sigaction(int signo, const struct sigaction *newact, struct sigaction *oldac
 		return -1;
 	}
 	if (oldact != NULL) {
-		try(syscall_get_env_sigaction(0, signo, oldact));
+		try(syscall_get_env_sigaction(signo, oldact));
 	}
 	if (newact != NULL) {
-		try(syscall_set_env_sigaction(0, signo, newact));
+		try(syscall_set_env_sigaction(signo, newact));
 	}
 	return 0;
 }
@@ -96,7 +96,7 @@ int sigemptyset(sigset_t *__set) {
 // 将参数中的__set掩码填满，全置1
 int sigfillset(sigset_t *__set) {
     if (__set != NULL) {
-        __set->sig = (uint32_t)0xFFFFFFFF;
+        __set->sig = ~(uint32_t)0x00000000;
         return 0;
     } else {
         return -1;

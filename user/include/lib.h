@@ -193,8 +193,8 @@ int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset);
 int sigpending(sigset_t *__set);
 
 // --- syscalls ---
-int syscall_get_env_sigaction(u_int envid, int signo, struct sigaction *oldact);
-int syscall_set_env_sigaction(u_int envid, int signo, const struct sigaction *newact);
+int syscall_get_env_sigaction(int signo, struct sigaction *oldact);
+int syscall_set_env_sigaction(int signo, const struct sigaction *newact);
 int syscall_sigaction_kill(u_int envid, int signo);
 int syscall_sigaction_finish(struct Trapframe *tf);
 int syscall_change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset);
