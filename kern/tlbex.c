@@ -58,8 +58,11 @@ void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
 	 */
 
 	/* Exercise 2.9: Your code here. */
-	while (page_lookup(cur_pgdir, va, &ppte) == NULL) {
-		passive_alloc(va, cur_pgdir, asid);
+	while(1){
+		if(page_lookup(cur_pgdir, va, &ppte) != NULL){
+			break;
+		}
+		passive_alloc((u_int) va, cur_pgdir, asid);
 	}
 	ppte = (Pte *)((u_long)ppte & ~0x7);
 	pentrylo[0] = ppte[0] >> 6;

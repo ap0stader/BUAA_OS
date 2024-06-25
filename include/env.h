@@ -52,7 +52,7 @@ struct Env {
 	sigset_t env_sigpending;
 	// 当前进程的掩码栈，栈顶表示当前正在处理的信号处理之前的掩码的状态
 	// 用于在信号处理完成之后恢复掩码只信号处理之前的状态
-	sigset_t env_sigprocmask_stack[64];
+	sigset_t env_sigprocmask_stack[32];
 	// 以上两个栈的栈顶的指针
 	int env_sigprocmask_stack_top;
 

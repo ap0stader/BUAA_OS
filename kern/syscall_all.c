@@ -244,9 +244,10 @@ int sys_exofork(void) {
 	memcpy(&e->env_sigaction, &curenv->env_sigaction, 32 * sizeof(struct sigaction));
 	e->env_sigprocmask = curenv->env_sigprocmask;
 	e->env_sigpending = curenv->env_sigpending;
-	memcpy(&e->env_sigprocmask_stack, &curenv->env_sigprocmask_stack, 64 * sizeof(sigset_t));
+	memcpy(&e->env_sigprocmask_stack, &curenv->env_sigprocmask_stack, 32 * sizeof(sigset_t));
 	e->env_sigprocmask_stack_top = curenv->env_sigprocmask_stack_top;
 	e->env_user_sigaction_entry = curenv->env_user_sigaction_entry;
+	e->env_start_sigkill = curenv->env_start_sigkill;
 	/* Step 2: Copy the current Trapframe below 'KSTACKTOP' to the new env's 'env_tf'. */
 	/* Exercise 4.9: Your code here. (2/4) */
 	e->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
@@ -643,8 +644,8 @@ void do_syscall(struct Trapframe *tf) {
 	int (*func)(u_int, u_int, u_int, u_int, u_int);
 	int sysno = tf->regs[4];
 	if (sysno < 0 || sysno >= MAX_SYSNO) {
-		sigaction_kill(0, SIGSYS);
 		tf->regs[2] = -E_NO_SYS;
+		sigaction_kill(0, SIGSYS);
 		return;
 	}
 

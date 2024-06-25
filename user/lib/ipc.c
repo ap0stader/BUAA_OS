@@ -51,7 +51,7 @@ void __attribute__((noreturn)) sigaction_entry(struct Trapframe *tf, int signo, 
 		// SIGINT/SIGILL/SIGSEGV默认处理是停止进程
 		exit();
 	} else {
-		// 其他的默认处理是忽略，但是要跳过错误的指令
+		// 其他的默认处理是忽略，但是SIGSYS要跳过错误的指令
 		if (signo == SIGSYS) {
 			tf->cp0_epc += 4;
 		}
