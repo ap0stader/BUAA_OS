@@ -55,7 +55,7 @@ struct Env {
 	int env_signo_stack[256];
 	// 当前进程的掩码栈，栈顶表示当前正在处理的信号处理之前的掩码的状态
 	// 用于在信号处理完成之后恢复掩码只信号处理之前的状态
-	sigset_t env_procmask_stack[256];
+	sigset_t env_sigprocmask_stack[256];
 	// 以上两个栈的栈顶的指针
 	int env_sigaction_stack_top;
 

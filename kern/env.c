@@ -259,7 +259,7 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	sigemptyset(&e->env_sigprocmask);
 	sigemptyset(&e->env_sigkill);
 	memset(&e->env_signo_stack, 0, 256 * sizeof(int));
-	memset(&e->env_procmask_stack, 0, 256 * sizeof(sigset_t));
+	memset(&e->env_sigprocmask_stack, 0, 256 * sizeof(sigset_t));
 	e->env_sigaction_stack_top = -1;
 	e->env_user_sigaction_entry = 0;
 	/* Exercise 3.4: Your code here. (3/4) */
@@ -494,11 +494,35 @@ void env_run(struct Env *e) {
 
 // challenge-sigaction
 int change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset) {
-
+	if (__oset != NULL) {
+		*__oset = curenv->env_sigprocmask;
+	}
+	if (__set != NULL) {
+		switch (__how) {
+			case SIG_BLOCK:
+				curenv->env_sigprocmask.sig |= __set->sig;
+				break;
+			case SIG_UNBLOCK:
+				curenv->env_sigprocmask.sig &= ~__set->sig;
+				break;
+			case SIG_SETMASK:
+				curenv->env_sigprocmask = *__set;
+				break;
+			default:
+				return -1;	
+		}
+	}
+	return 0;
 }
 
 int sigaction_kill(u_int envid, int signo) {
-
+	struct Env *e;
+	if (!is_legal_signo(signo)) {
+		return -1;
+	}
+	try(envid2env(envid, &e, 1));
+	e->env_sigkill.sig |= signo2mask(signo);
+	return 0;
 }
 
 void env_check() {

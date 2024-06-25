@@ -120,12 +120,16 @@ void do_sigaction(struct Trapframe *tf) {
 	}
 
 	if (process_signo != 0) {
+		// 入栈
 		curenv->env_sigaction_stack_top++;
 		if (curenv->env_sigaction_stack_top >= 256) {
 			panic("Env sigaction stack overflow");
 		}
 		curenv->env_signo_stack[curenv->env_sigaction_stack_top] = process_signo;
-		curenv->env_procmask_stack[curenv->env_sigaction_stack_top] = curenv->env_sigprocmask;
+		curenv->env_sigprocmask_stack[curenv->env_sigaction_stack_top] = curenv->env_sigprocmask;
+		// 修改
+		curenv->env_sigkill.sig &= ~signo2mask(process_signo);
+		curenv->env_sigprocmask.sig |= curenv->env_sigaction[process_signo - 1].sa_mask.sig | signo2mask(process_signo);
 
 		struct Trapframe tmp_tf = *tf;
 		// 复制到用户的异常处理栈保存以允许异常重入

@@ -548,7 +548,20 @@ int sys_sigaction_kill(u_int envid, int signo) {
 }
 
 int sys_sigaction_finish(struct Trapframe *tf) {
+	if (is_illegal_va_range((u_long)tf, sizeof *tf)) {
+		return -E_INVAL;
+	}
+	int finish_signo = curenv->env_signo_stack[curenv->env_sigaction_stack_top];
+	curenv->env_sigprocmask = curenv->env_sigprocmask_stack[curenv->env_sigaction_stack_top];
+	curenv->env_sigaction_stack_top--;
 
+	*((struct Trapframe *)KSTACKTOP - 1) = *tf;
+	if (finish_signo == SIGSYS) {
+		curenv->env_tf.cp0_epc += 4;
+	}
+	// return `tf->regs[2]` instead of 0, because return value overrides regs[2] on
+	// current trapframe.
+	return tf->regs[2];
 }
 
 int sys_change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset) {
