@@ -54,7 +54,7 @@ struct sigaction {
 */
 
 // 是否是合法的信号
-#define is_legal_signo(__signo) (MINSIGNO <= (__signo) && (__signo) <= MAXSIGNO)
+#define is_legal_signo(__signo) ((MINSIGNO <= (__signo) && (__signo) <= MAXSIGNO))
 // 生成信号对应的掩码
 #define signo2mask(__signo) ((uint32_t)(1 << ((__signo) - 1)))
 
