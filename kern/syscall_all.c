@@ -578,7 +578,7 @@ int sys_get_curenv_sigpending(sigset_t *__set) {
 		return -1;
 	} else {
 		// SIGKILL不可被阻塞
-		__set->sig = curenv->env_sigkill.sig & curenv->env_sigprocmask.sig & ~signo2mask(SIGKILL);
+		__set->sig = curenv->env_sigkill.sig & ~signo2mask(SIGKILL);
 		return 0;
 	}
 }
