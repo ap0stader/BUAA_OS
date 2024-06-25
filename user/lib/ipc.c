@@ -52,7 +52,9 @@ void __attribute__((noreturn)) sigaction_entry(struct Trapframe *tf, int signo, 
 		exit();
 	} else {
 		// 其他的默认处理是忽略，但是要跳过错误的指令
-		tf->cp0_epc += 4;
+		if (signo == SIGSYS) {
+			tf->cp0_epc += 4;
+		}
 		int r = syscall_sigaction_finish(tf);
 		user_panic("syscall_sigaction_finish returned %d", r);
 	}
