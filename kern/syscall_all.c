@@ -524,7 +524,7 @@ int sys_get_env_sigaction(u_int envid, int signo, struct sigaction *oldact) {
 		return -1;
 	}
 	if (oldact != NULL) {
-		try(envid2env(envid, &e, 1));
+		try(envid2env(envid, &e, 0));
 		*oldact = e->env_sigaction[signo - 1];
 	}
 	return 0;
@@ -537,7 +537,7 @@ int sys_set_env_sigaction(u_int envid, int signo, struct sigaction *newact) {
 		return -1;
 	}
 	if (newact != NULL) {
-		try(envid2env(envid, &e, 1));
+		try(envid2env(envid, &e, 0));
 		e->env_sigaction[signo - 1] = *newact;
 	}
 	return 0;

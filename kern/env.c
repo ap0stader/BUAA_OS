@@ -520,7 +520,7 @@ int sigaction_kill(u_int envid, int signo) {
 	if (!is_legal_signo(signo)) {
 		return -1;
 	}
-	try(envid2env(envid, &e, 1));
+	try(envid2env(envid, &e, 0));
 	e->env_sigkill.sig |= signo2mask(signo);
 	return 0;
 }
