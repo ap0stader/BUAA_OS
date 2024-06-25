@@ -488,7 +488,8 @@ void env_run(struct Env *e) {
 	 *    returning to the kernel caller, making 'env_run' a 'noreturn' function as well.
 	 */
 	/* Exercise 3.8: Your code here. (2/2) */
-	env_pop_tf(&curenv->env_tf, curenv->env_asid);
+	struct Trapframe tmp_tf = curenv->env_tf;
+	env_pop_tf(&tmp_tf, curenv->env_asid);
 }
 
 // challenge-sigaction
