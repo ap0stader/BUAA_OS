@@ -494,31 +494,6 @@ void env_run(struct Env *e) {
 }
 
 // challenge-sigaction
-int change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset) {
-	if (__oset != NULL) {
-		*__oset = curenv->env_sigprocmask;
-	}
-	if (__set == NULL) {
-		return -1;
-	} else {
-		switch (__how) {
-			case SIG_BLOCK:
-				curenv->env_sigprocmask.sig |= __set->sig;
-				break;
-			case SIG_UNBLOCK:
-				curenv->env_sigprocmask.sig &= ~__set->sig;
-				break;
-			case SIG_SETMASK:
-				curenv->env_sigprocmask = *__set;
-				break;
-			default:
-				return -1;	
-		}
-	}
-	curenv->env_sigprocmask.sig &= ~(signo2mask(SIGKILL));
-	return 0;
-}
-
 int sigaction_kill(u_int envid, int signo) {
 	struct Env *e;
 	if (!is_legal_signo(signo)) {

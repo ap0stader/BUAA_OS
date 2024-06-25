@@ -65,9 +65,6 @@ enum {
     SIG_SETMASK, //设置当前掩码为__set
 };
 
-// 内核中调整当前进程的procmask
-int change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset);
-
 // 内核中发送信号到某个进程
 int sigaction_kill(u_int envid, int signo);
 

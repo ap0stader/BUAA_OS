@@ -567,7 +567,27 @@ int sys_sigaction_finish(struct Trapframe *tf) {
 }
 
 int sys_change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset) {
-	return change_curenv_sigprocmask(__how, __set, __oset);
+	if (__oset != NULL) {
+		*__oset = curenv->env_sigprocmask;
+	}
+	if (__set == NULL) {
+		return -1;
+	} else {
+		switch (__how) {
+			case SIG_BLOCK:
+				curenv->env_sigprocmask.sig |= __set->sig;
+				break;
+			case SIG_UNBLOCK:
+				curenv->env_sigprocmask.sig &= ~__set->sig;
+				break;
+			case SIG_SETMASK:
+				curenv->env_sigprocmask = *__set;
+				break;
+			default:
+				return -1;	
+		}
+	}
+	return 0;
 }
 
 int sys_get_curenv_sigpending(sigset_t *__set) {
