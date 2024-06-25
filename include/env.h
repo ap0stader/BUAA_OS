@@ -49,7 +49,7 @@ struct Env {
 	// 当前进程的屏蔽的掩码
 	sigset_t env_sigprocmask;
 	// 当前进程收到的信号
-	sigset_t env_sigkill;
+	sigset_t env_sigpending;
 	// 当前进程的信号处理栈，栈顶表示当前正在处理的信号
 	// 用于在信号处理完成之后判断当前处理的信号
 	int env_signo_stack[256];
@@ -61,6 +61,9 @@ struct Env {
 
 	// 当前进程的用户态信号处理程序入口
 	u_int env_user_sigaction_entry;
+
+	// 开始执行了SIGKILL
+	int env_start_sigkill;
 };
 
 LIST_HEAD(Env_list, Env);

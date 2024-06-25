@@ -58,6 +58,7 @@ struct sigaction {
 // 生成信号对应的掩码
 #define signo2mask(__signo) ((uint32_t)(1 << ((__signo) - 1)))
 
+// 修改进程的屏蔽的方法
 enum {
     SIG_BLOCK, //添加__set到当前掩码
     SIG_UNBLOCK, //从当前掩码中移除__set

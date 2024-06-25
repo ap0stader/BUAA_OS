@@ -257,11 +257,12 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	// 清空所有的内容
 	memset(&e->env_sigaction, 0, 32 * sizeof(struct sigaction));
 	e->env_sigprocmask.sig = (uint32_t)0x00000000;
-	e->env_sigkill.sig = (uint32_t)0x00000000;
+	e->env_sigpending.sig = (uint32_t)0x00000000;
 	memset(&e->env_signo_stack, 0, 256 * sizeof(int));
 	memset(&e->env_sigprocmask_stack, 0, 256 * sizeof(sigset_t));
 	e->env_sigaction_stack_top = -1;
 	e->env_user_sigaction_entry = 0;
+	e->env_start_sigkill = 0;
 	/* Exercise 3.4: Your code here. (3/4) */
 	e->env_id = mkenvid(e);
 	try(asid_alloc(&e->env_asid));
@@ -497,7 +498,9 @@ int change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset
 	if (__oset != NULL) {
 		*__oset = curenv->env_sigprocmask;
 	}
-	if (__set != NULL) {
+	if (__set == NULL) {
+		return -1;
+	} else {
 		switch (__how) {
 			case SIG_BLOCK:
 				curenv->env_sigprocmask.sig |= __set->sig;
@@ -512,6 +515,7 @@ int change_curenv_sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset
 				return -1;	
 		}
 	}
+	curenv->env_sigprocmask.sig &= ~(signo2mask(SIGKILL));
 	return 0;
 }
 
@@ -521,7 +525,7 @@ int sigaction_kill(u_int envid, int signo) {
 		return -1;
 	}
 	try(envid2env(envid, &e, 0));
-	e->env_sigkill.sig |= signo2mask(signo);
+	e->env_sigpending.sig |= signo2mask(signo);
 	return 0;
 }
 

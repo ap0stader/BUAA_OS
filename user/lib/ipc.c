@@ -51,7 +51,7 @@ void __attribute__((noreturn)) sigaction_entry(struct Trapframe *tf, int signo, 
 		// SIGINT/SIGILL/SIGSEGV默认处理是停止进程
 		exit();
 	} else {
-		// 其他的默认处理是忽略
+		// 其他的默认处理是忽略，但是要跳过错误的指令
 		tf->cp0_epc += 4;
 		int r = syscall_sigaction_finish(tf);
 		user_panic("syscall_sigaction_finish returned %d", r);
@@ -160,6 +160,9 @@ int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
 }
 
 int sigprocmask(int __how, const sigset_t *__set, sigset_t *__oset) {
+	if (__set == NULL) {
+		return -1;
+	}
 	return syscall_change_curenv_sigprocmask(__how, __set, __oset);
 }
 

@@ -101,13 +101,17 @@ void do_tlb_mod(struct Trapframe *tf) {
 
 // challenge-sigaction
 void do_sigaction(struct Trapframe *tf) {
+	if (curenv->env_start_sigkill) {
+		return;
+	}
 	int process_signo = 0;
 	// 获取当前未被屏蔽的等待处理的信号
 	// 对应位为1表示阻塞，为0表示未被阻塞，所以需要取反
-	uint32_t unproc_signo = curenv->env_sigkill.sig & ~curenv->env_sigprocmask.sig;
+	uint32_t unproc_signo = curenv->env_sigpending.sig & ~curenv->env_sigprocmask.sig;
 	// 获取当前需要处理的信号
-	if (curenv->env_sigkill.sig & signo2mask(SIGKILL)) {
+	if (curenv->env_sigpending.sig & signo2mask(SIGKILL)) {
 		// 最优先考虑SIGKILL
+		curenv->env_start_sigkill = 1;
 		process_signo = SIGKILL;
 	} else if (unproc_signo) {
 		for (int i = MINSIGNO; i <= MAXSIGNO; i++) {
@@ -128,12 +132,8 @@ void do_sigaction(struct Trapframe *tf) {
 		curenv->env_signo_stack[curenv->env_sigaction_stack_top] = process_signo;
 		curenv->env_sigprocmask_stack[curenv->env_sigaction_stack_top] = curenv->env_sigprocmask;
 		// 修改
-		curenv->env_sigkill.sig &= ~signo2mask(process_signo);
-		if (process_signo == SIGKILL) {
-			curenv->env_sigprocmask.sig = (uint32_t)0XFFFFFFFF;
-		} else {
-			curenv->env_sigprocmask.sig |= curenv->env_sigaction[process_signo - 1].sa_mask.sig | signo2mask(process_signo);
-		}
+		curenv->env_sigpending.sig &= ~signo2mask(process_signo);
+		change_curenv_sigprocmask(SIG_BLOCK, curenv->env_sigaction[process_signo - 1].sa_mask.sig | signo2mask(process_signo), NULL);
 
 		struct Trapframe tmp_tf = *tf;
 		// 复制到用户的异常处理栈保存以允许异常重入

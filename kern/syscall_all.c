@@ -243,7 +243,7 @@ int sys_exofork(void) {
 	// challenge-sigaction
 	memcpy(&e->env_sigaction, &curenv->env_sigaction, 32 * sizeof(struct sigaction));
 	e->env_sigprocmask = curenv->env_sigprocmask;
-	e->env_sigkill = curenv->env_sigkill;
+	e->env_sigpending = curenv->env_sigpending;
 	memcpy(&e->env_signo_stack, &curenv->env_signo_stack, 256 * sizeof(int));
 	memcpy(&e->env_sigprocmask_stack, &curenv->env_sigprocmask_stack, 256 * sizeof(sigset_t));
 	e->env_sigaction_stack_top = curenv->env_sigaction_stack_top;
@@ -575,7 +575,7 @@ int sys_get_curenv_sigpending(sigset_t *__set) {
 		return -1;
 	} else {
 		// SIGKILL不可被阻塞
-		__set->sig = curenv->env_sigkill.sig & ~signo2mask(SIGKILL);
+		__set->sig = curenv->env_sigpending.sig & ~signo2mask(SIGKILL);
 		return 0;
 	}
 }
