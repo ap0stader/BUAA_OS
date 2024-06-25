@@ -243,6 +243,11 @@ int sys_exofork(void) {
 	// challenge-sigaction
 	memcpy(&e->env_sigaction, &curenv->env_sigaction, 32 * sizeof(struct sigaction));
 	e->env_sigprocmask = curenv->env_sigprocmask;
+	e->env_sigkill = curenv->env_sigkill;
+	memcpy(&e->env_signo_stack, &curenv->env_signo_stack, 256 * sizeof(int));
+	memcpy(&e->env_sigprocmask_stack, &curenv->env_sigprocmask_stack, 256 * sizeof(sigset_t));
+	e->env_sigaction_stack_top = curenv->env_sigaction_stack_top;
+	e->env_user_sigaction_entry = curenv->env_user_sigaction_entry;
 	/* Step 2: Copy the current Trapframe below 'KSTACKTOP' to the new env's 'env_tf'. */
 	/* Exercise 4.9: Your code here. (2/4) */
 	e->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
