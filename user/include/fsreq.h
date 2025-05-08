@@ -14,6 +14,7 @@ enum {
 	FSREQ_DIRTY,
 	FSREQ_REMOVE,
 	FSREQ_SYNC,
+	FSREQ_SET_ENCRYPT_KEY,
 	MAX_FSREQNO,
 };
 
@@ -43,6 +44,10 @@ struct Fsreq_dirty {
 
 struct Fsreq_remove {
 	char req_path[MAXPATHLEN];
+};
+
+struct Fsreq_set_encrypt_key {
+	int req_fileid;
 };
 
 #endif

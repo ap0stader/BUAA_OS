@@ -258,3 +258,25 @@ int remove(const char *path) {
 int sync(void) {
 	return fsipc_sync();
 }
+
+int fset_encrypt_key(int fdnum) {
+	int r;
+	struct Fd *fd;
+	struct Filefd *ffd;
+
+	if ((r = fd_lookup(fdnum, &fd)) < 0) {
+		return r;
+	}
+
+	if (fd->fd_dev_id != devfile.dev_id) {
+		return -E_INVAL;
+	}
+
+	ffd = (struct Filefd *)fd;
+
+	if (ffd->f_file.f_size < BLOCK_SIZE) {
+		return -E_INVALID_ENCRYPT_KEY;
+	}
+
+	return fsipc_set_encrypt_key(ffd->f_fileid);
+}

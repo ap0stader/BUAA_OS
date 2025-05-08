@@ -136,3 +136,12 @@ int fsipc_remove(const char *path) {
 int fsipc_sync(void) {
 	return fsipc(FSREQ_SYNC, fsipcbuf, 0, 0);
 }
+
+int fsipc_set_encrypt_key(u_int fileid) {
+	struct Fsreq_set_encrypt_key *req;
+
+	req = (struct Fsreq_set_encrypt_key *)fsipcbuf;
+	req->req_fileid = fileid;
+
+	return fsipc(FSREQ_SET_ENCRYPT_KEY, req, 0, 0);
+}
