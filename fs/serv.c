@@ -361,7 +361,6 @@ void serve_sync(u_int envid) {
 void serve_set_encrypt_key(u_int envid, struct Fsreq_set_encrypt_key *rq) {
 	// Copy the encryption key from the request to the global variable
 	struct Open *pOpen;
-	u_int filebno;
 	void *blk;
 	int r;
 
