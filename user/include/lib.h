@@ -100,7 +100,9 @@ int fsipc_dirty(u_int, u_int);
 int fsipc_remove(const char *);
 int fsipc_sync(void);
 int fsipc_incref(u_int);
-int fsipc_set_encrypt_key(u_int);
+int fsipc_key_set(u_int);
+int fsipc_key_unset(void);
+int fsipc_key_isset(void);
 
 // fd.c
 int close(int fd);
@@ -119,7 +121,9 @@ int read_map(int fd, u_int offset, void **blk);
 int remove(const char *path);
 int ftruncate(int fd, u_int size);
 int sync(void);
-int fset_encrypt_key(int fd);
+int fskey_set(int fd);
+int fskey_unset();
+int fskey_isset();
 
 #define user_assert(x)                                                                             \
 	do {                                                                                       \

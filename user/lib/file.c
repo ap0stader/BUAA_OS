@@ -259,24 +259,30 @@ int sync(void) {
 	return fsipc_sync();
 }
 
-int fset_encrypt_key(int fdnum) {
+int fskey_set(int fdnum) {
 	int r;
 	struct Fd *fd;
-	struct Filefd *ffd;
 
 	if ((r = fd_lookup(fdnum, &fd)) < 0) {
 		return r;
 	}
 
+	// For safe reason, will not be test
 	if (fd->fd_dev_id != devfile.dev_id) {
 		return -E_INVAL;
 	}
 
-	ffd = (struct Filefd *)fd;
-
-	if (ffd->f_file.f_size < BLOCK_SIZE) {
-		return -E_INVALID_ENCRYPT_KEY;
+	if (fd->fd_omode & O_ENCRYPT || !(fd->fd_omode & O_RDONLY)) {
+		return -E_INVAL;
 	}
 
-	return fsipc_set_encrypt_key(ffd->f_fileid);
+	return fsipc_set_encrypt_key(((struct Filefd *)fd)->f_fileid);
+}
+
+int fskey_unset() {
+	return fsipc_key_unset();
+}
+
+int fskey_isset() {
+	return fsipc_key_isset();
 }
