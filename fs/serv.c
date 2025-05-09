@@ -212,7 +212,7 @@ void serve_map(u_int envid, struct Fsreq_map *rq) {
 	}
 
 	if (pOpen->o_mode & O_ENCRYPT && !encrypt_key_set) {
-		ipc_send(envid, -E_INVAL, 0, 0);
+		ipc_send(envid, -E_BAD_KEY, 0, 0);
 		return;
 	}
 
