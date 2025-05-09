@@ -276,7 +276,7 @@ int fskey_set(int fdnum) {
 		return -E_INVAL;
 	}
 
-	return fsipc_set_encrypt_key(((struct Filefd *)fd)->f_fileid);
+	return fsipc_key_set(((struct Filefd *)fd)->f_fileid);
 }
 
 int fskey_unset() {
