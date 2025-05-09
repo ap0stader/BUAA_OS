@@ -100,9 +100,11 @@ int close(int fdnum) {
 		return r;
 	}
 
-	r = (*dev->dev_close)(fd);
+	if ((r = (*dev->dev_close)(fd)) < 0) {
+		return r;
+	}
 	fd_close(fd);
-	return r;
+	return 0;
 }
 
 void close_all(void) {
