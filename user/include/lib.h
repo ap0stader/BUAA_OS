@@ -100,9 +100,9 @@ int fsipc_dirty(u_int, u_int);
 int fsipc_remove(const char *);
 int fsipc_sync(void);
 int fsipc_incref(u_int);
-int fsipc_key_set(u_int);
-int fsipc_key_unset(void);
-int fsipc_key_isset(void);
+int fsipc_key_set(u_int fileid);
+int fsipc_key_unset();
+int fsipc_key_isset();
 
 // fd.c
 int close(int fd);
