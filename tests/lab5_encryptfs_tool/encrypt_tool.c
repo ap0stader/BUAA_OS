@@ -2,6 +2,8 @@
 
 static char *msg = "Let the ruling classes tremble at a Communistic revolution.\nThe proletarians have nothing to lose but their chains.\nThey have a world to win.\n";
 
+// static char *msg = "Workers of the world, unite!";
+
 int main() {
     int r;
     int key_fd, msg_fd;
