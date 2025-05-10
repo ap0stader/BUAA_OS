@@ -272,7 +272,7 @@ int fskey_set(int fdnum) {
 		return -E_INVAL;
 	}
 
-	if (fd->fd_omode & O_ENCRYPT || !(fd->fd_omode & O_RDONLY)) {
+	if (fd->fd_omode & O_ENCRYPT || (fd->fd_omode & O_ACCMODE) == O_WRONLY) {
 		return -E_INVAL;
 	}
 
