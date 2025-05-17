@@ -4,14 +4,18 @@
 
 // static char *msg = "Workers of the world, unite!";
 
-static char *msg = "A spectre is haunting Europe - the spectre of Communism.\nAll the Powers of old Europe have entered into a holy alliance to exorcize this spectre:\nPope and Czar, Metternich and Guizot, French Radicals and German police spies.";
+// static char *msg = "A spectre is haunting Europe - the spectre of Communism.\nAll the Powers of old Europe have entered into a holy alliance to exorcize this spectre:\nPope and Czar, Metternich and Guizot, French Radicals and German police spies.";
+
+// static char *msg = "In place of the old bourgeois society, with its classes and class antagonisms,\nwe shall have an association,\nin which the free development of each is the condition for the free development of all.";
+
+static char *msg = "The history of all hitherto existing society is the history of class struggles.";
 
 int main() {
     int r;
     int key_fd, msg_fd;
     char buf[512];
     
-    key_fd = open("/key0.key", O_RDONLY);
+    key_fd = open("/key2.key", O_RDONLY);
     r = fskey_set(key_fd);
     debugf("%d\n", r);
     close(key_fd);
