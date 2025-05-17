@@ -19,12 +19,13 @@ int main() {
 	int key_fd, msg_fd;
 	char buf[512];
 
+	memset(buf, 0, sizeof(buf));
 	while (!fsipc_key_isset()) {
 		;
 	}
 	debugf("\n[SLAVEB] key is set\n");
 
-	// Write an encrypted file /newmsgb
+	// Write (/newmsgb)
 	if ((r = open("/newmsgb", O_RDWR | O_ENCRYPT | O_CREAT)) < 0) {
 		user_panic("[SLAVEB] cannot create and open /newmsgb: %d", r);
 	}
@@ -35,7 +36,7 @@ int main() {
 	if ((r = close(msg_fd)) < 0) {
 		user_panic("[SLAVEB] cannot close /newmsgb: %d", r);
 	}
-	// -----
+	// Read (/newmsgb)
 	if ((r = open("/newmsgb", O_RDONLY)) < 0) {
 		user_panic("[SLAVEB] cannot open /newmsgb: %d", r);
 	}
@@ -49,11 +50,6 @@ int main() {
 				   i, (unsigned char)buf[i], (unsigned char)msg2_encrypted[i]);
 		}
 	}
-	debugf("\n");
-	for (int i = 0; i < strlen(msg2) + 1; i++) {
-		debugf(" %c ", msg2[i]);
-	}
-	debugf("\n");
 	for (int i = 0; i < strlen(msg2) + 1; i++) {
 		debugf("%02x ", (unsigned char)buf[i]);
 	}
@@ -63,7 +59,7 @@ int main() {
 	}
 	debugf("\n[SLAVEB] write is good\n");
 
-	// Read an encrypted file /msgb
+	// Read (/msgb)
 	if ((r = open("/msgb", O_RDONLY | O_ENCRYPT)) < 0) {
 		user_panic("[SLAVEB] cannot open /msgb: %d", r);
 	}
@@ -71,7 +67,6 @@ int main() {
 	if ((r = read(msg_fd, buf, 511)) < 0) {
 		user_panic("[SLAVEB] cannot read /msgb: %d", r);
 	}
-	debugf("\n");
 	for (int i = 0; i < strlen(msg1) + 1; i++) {
 		if (buf[i] != msg1[i]) {
 			user_panic("[SLAVEB] read /msgb returned wrong data at %d: %02x != %02x", i,
@@ -80,7 +75,6 @@ int main() {
 			debugf("%c", buf[i]);
 		}
 	}
-	debugf("\n");
 	if ((r = close(msg_fd)) < 0) {
 		user_panic("[SLAVEB] cannot close /msgb: %d", r);
 	}

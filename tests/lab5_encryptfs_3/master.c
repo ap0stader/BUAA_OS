@@ -11,7 +11,9 @@ int main() {
 	if ((r = fskey_isset()) != 1) {
 		user_panic("[MASTER] fskey_isset() failed: %d\n", r);
 	}
-	close(key_fd);
+	if ((r = close(key_fd)) != 0) {
+		user_panic("[MASTER] close() failed: %d\n", r);
+	}
 	debugf("\n[MASTER] fskey_set() passed\n");
 
 	return 0;

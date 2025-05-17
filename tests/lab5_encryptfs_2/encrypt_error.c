@@ -4,21 +4,31 @@ static char *msg1 = "Let the ruling classes tremble at a Communistic "
 		    "revolution.\nThe proletarians have nothing to lose but "
 		    "their chains.\nThey have a world to win.\n";
 
-void compare_msg1() {
+void compare_msg1(char *test_name) {
+	int r;
 	int msg_fd;
 	char buf[512];
 
-	msg_fd = open("/msg", O_RDONLY | O_ENCRYPT);
-	read(msg_fd, buf, 511);
+	memset(buf, 0, sizeof(buf));
+	// Read (/msg)
+	if ((r = open("/msg", O_RDONLY | O_ENCRYPT)) < 0) {
+		user_panic("[%s] cannot open /msg: %d", test_name, r);
+	}
+	msg_fd = r;
+	if ((r = read(msg_fd, buf, 511)) < 0) {
+		user_panic("[%s] cannot read /msg: %d", test_name, r);
+	}
 	for (int i = 0; i < strlen(msg1) + 1; i++) {
 		if (buf[i] != msg1[i]) {
-			user_panic("read /msg returned wrong data at %d: %02x != %02x", i,
-				   (unsigned char)buf[i], (unsigned char)msg1[i]);
+			user_panic("[%s] read /msg returned wrong data at %d: %02x != %02x",
+				   test_name, i, (unsigned char)buf[i], (unsigned char)msg1[i]);
 		} else {
 			debugf("%c", buf[i]);
 		}
 	}
-	close(msg_fd);
+	if ((r = close(msg_fd)) < 0) {
+		user_panic("[%s] cannot close /msg: %d", test_name, r);
+	}
 }
 
 int main() {
@@ -27,70 +37,89 @@ int main() {
 
 	// Invalid fd
 	if ((r = fskey_set(-1)) != -E_INVAL) {
-		user_panic("[-1] fskey_set() failed: %d\n", r);
+		user_panic("[INVALID_FD] fskey_set() failed: %d\n", r);
 		return 1;
 	}
-	debugf("[-1] fskey_set() passed\n");
+	debugf("[INVALID_FD] fskey_set() passed\n");
 
 	// Invalid open mode - O_WRONLY
-	key_fd = open("/key2.key", O_WRONLY);
+	if ((r = open("/key2.key", O_WRONLY)) < 0) {
+		user_panic("[O_WRONLY] open() failed: %d\n", r);
+	}
+	key_fd = r;
 	if ((r = fskey_set(key_fd)) != -E_INVAL) {
 		user_panic("[O_WRONLY] fskey_set() failed: %d\n", r);
 	}
 	if ((r = fskey_isset()) != 0) {
 		user_panic("[O_WRONLY] fskey_isset() failed: %d\n", r);
 	}
-	close(key_fd);
+	if ((r = close(key_fd)) != 0) {
+		user_panic("[O_WRONLY] close() failed: %d\n", r);
+	}
 	debugf("[O_WRONLY] fskey_set() passed\n");
 
 	// Invalid open mode - O_ENCRYPT
-	key_fd = open("/key1.key", O_RDONLY);
-	fskey_set(key_fd);
+	if ((r = open("/key1.key", O_RDONLY)) < 0) {
+		user_panic("[O_ENCRYPT] open(key1.key) failed: %d\n", r);
+	}
+	key_fd = r;
+	if ((r = fskey_set(key_fd)) != 0) {
+		user_panic("[O_ENCRYPT] fskey_set(key1.key) failed: %d\n", r);
+	}
 	if ((r = fskey_isset()) != 1) {
 		user_panic("[O_ENCRYPT] fskey_isset(key1.key) failed: %d\n", r);
 	}
-	close(key_fd);
-	compare_msg1();
+	if ((r = close(key_fd)) != 0) {
+		user_panic("[O_ENCRYPT] close(key1.key) failed: %d\n", r);
+	}
+	compare_msg1("O_ENCRYPT");
 	if ((r = open("/empty_key.key", O_RDONLY | O_ENCRYPT)) < 0) {
 		user_panic("[O_ENCRYPT] open(empty_key.key) failed: %d\n", r);
 	}
 	key_fd = r;
 	if ((r = fskey_set(key_fd)) != -E_INVAL) {
-		user_panic("[O_ENCRYPT] fskey_set() failed: %d\n", r);
+		user_panic("[O_ENCRYPT] fskey_set(empty_key.key) failed: %d\n", r);
 	}
 	if ((r = fskey_isset()) != 1) {
 		user_panic("[O_ENCRYPT] fskey_isset(empty_key.key) failed: %d\n", r);
 	}
-	close(key_fd);
-	compare_msg1();
+	if ((r = close(key_fd)) != 0) {
+		user_panic("[O_ENCRYPT] close(empty_key.key) failed: %d\n", r);
+	}
+	compare_msg1("O_ENCRYPT");
 	debugf("[O_ENCRYPT] fskey_set() passed\n");
 
-	// Reset key without unset key
-	key_fd = open("/key2.key", O_RDONLY);
+	// Set key twice without unset key
+	if ((r = open("/key2.key", O_RDONLY)) < 0) {
+		user_panic("[SET_TWICE] open() failed: %d\n", r);
+	}
+	key_fd = r;
 	if ((r = fskey_set(key_fd)) != -E_BAD_KEY) {
-		user_panic("[RESET] fskey_set() failed: %d\n", r);
+		user_panic("[SET_TWICE] fskey_set() failed: %d\n", r);
 	}
 	if ((r = fskey_isset()) != 1) {
-		user_panic("[RESET] fskey_isset() failed: %d\n", r);
+		user_panic("[SET_TWICE] fskey_isset() failed: %d\n", r);
 	}
-	close(key_fd);
-	compare_msg1();
-	debugf("[RESET] fskey_set() passed\n");
+	if ((r = close(key_fd)) != 0) {
+		user_panic("[SET_TWICE] close() failed: %d\n", r);
+	}
+	compare_msg1("SET_TWICE");
+	debugf("[SET_TWICE] fskey_set() passed\n");
 
-	// Unset key with key unset
+	// Unset key twice without set key
 	if ((r = fskey_unset()) != 0) {
-		user_panic("[REUNSET] fskey_unset()_1 failed: %d\n", r);
+		user_panic("[UNSET_TWICE] fskey_unset()_1 failed: %d\n", r);
 	}
 	if ((r = fskey_isset()) != 0) {
-		user_panic("[REUNSET] fskey_isset()_1 failed: %d\n", r);
+		user_panic("[UNSET_TWICE] fskey_isset()_1 failed: %d\n", r);
 	}
 	if ((r = fskey_unset()) != -E_BAD_KEY) {
-		user_panic("[REUNSET] fskey_unset()_2 failed: %d\n", r);
+		user_panic("[UNSET_TWICE] fskey_unset()_2 failed: %d\n", r);
 	}
 	if ((r = fskey_isset()) != 0) {
-		user_panic("[REUNSET] fskey_isset()_2 failed: %d\n", r);
+		user_panic("[UNSET_TWICE] fskey_isset()_2 failed: %d\n", r);
 	}
-	debugf("[REUNSET] fskey_unset() passed\n");
+	debugf("[UNSET_TWICE] fskey_unset() passed\n");
 
 	// Open file with key unset
 	if ((r = open("/msg", O_RDONLY | O_ENCRYPT)) != -E_BAD_KEY) {
@@ -106,14 +135,20 @@ int main() {
 	debugf("[NOKEY_OPEN] open() passed\n");
 
 	// Close file with key unset
-	key_fd = open("/key1.key", O_RDONLY);
+	if ((r = open("/key1.key", O_RDONLY)) < 0) {
+		user_panic("[NOKEY_CLOSE] open(key1.key) failed: %d\n", r);
+	}
+	key_fd = r;
 	if ((r = fskey_set(key_fd)) != 0) {
 		user_panic("[NOKEY_CLOSE] fskey_set() failed: %d\n", r);
 	}
 	if ((r = fskey_isset()) != 1) {
 		user_panic("[NOKEY_CLOSE] fskey_isset()_1 failed: %d\n", r);
 	}
-	msg_fd = open("/msg", O_RDONLY | O_ENCRYPT);
+	if ((r = open("/msg", O_RDONLY | O_ENCRYPT)) < 0) {
+		user_panic("[NOKEY_CLOSE] open(msg) failed: %d\n", r);
+	}
+	msg_fd = r;
 	if ((r = fskey_unset()) != 0) {
 		user_panic("[NOKEY_CLOSE] fskey_unset() failed: %d\n", r);
 	}
@@ -121,35 +156,49 @@ int main() {
 		user_panic("[NOKEY_CLOSE] fskey_isset()_2 failed: %d\n", r);
 	}
 	if ((r = close(key_fd)) != 0) {
-		user_panic("[NOKEY_CLOSE] close()_1 failed: %d\n", r);
+		user_panic("[NOKEY_CLOSE] close(key1.key) failed: %d\n", r);
 	}
 	if ((r = close(msg_fd)) != -E_BAD_KEY) {
-		user_panic("[NOKEY_CLOSE] close()_2 failed: %d\n", r);
+		user_panic("[NOKEY_CLOSE] close(msg) failed: %d\n", r);
 	}
 	debugf("[NOKEY_CLOSE] close() passed\n");
 
 	// Invalid key - empty key
-	key_fd = open("/empty_key.key", O_RDONLY);
+	if ((r = open("/empty_key.key", O_RDONLY)) < 0) {
+		user_panic("[KEY_EMPTY] open() failed: %d\n", r);
+	}
+	key_fd = r;
 	if ((r = fskey_set(key_fd)) != -E_INVALID_KEY_FILE) {
 		user_panic("[KEY_EMPTY] fskey_set() failed: %d\n", r);
 	}
-	close(key_fd);
+	if ((r = close(key_fd)) != 0) {
+		user_panic("[KEY_EMPTY] close() failed: %d\n", r);
+	}
 	debugf("[KEY_EMPTY] fskey_set() passed\n");
 
 	// Invalid key - too_short key
-	key_fd = open("/too_short.key", O_RDONLY);
+	if ((r = open("/too_short.key", O_RDONLY)) < 0) {
+		user_panic("[KEY_SHORT] open() failed: %d\n", r);
+	}
 	if ((r = fskey_set(key_fd)) != -E_INVALID_KEY_FILE) {
 		user_panic("[KEY_SHORT] fskey_set() failed: %d\n", r);
 	}
-	close(key_fd);
+	if ((r = close(key_fd)) != 0) {
+		user_panic("[KEY_SHORT] close() failed: %d\n", r);
+	}
 	debugf("[KEY_SHORT] fskey_set() passed\n");
 
 	// Invalid key - invalid_magic key
-	key_fd = open("/invalid_magic.key", O_RDONLY);
+	if ((r = open("/invalid_magic.key", O_RDONLY)) < 0) {
+		user_panic("[KEY_MAGIC] open() failed: %d\n", r);
+	}
 	if ((r = fskey_set(key_fd)) != -E_INVALID_KEY_FILE) {
 		user_panic("[KEY_MAGIC] fskey_set() failed: %d\n", r);
 	}
-	close(key_fd);
+	if ((r = close(key_fd)) != 0) {
+		user_panic("[KEY_MAGIC] close() failed: %d\n", r);
+	}
+	debugf("[KEY_MAGIC] fskey_set() passed\n");
 
 	return 0;
 }

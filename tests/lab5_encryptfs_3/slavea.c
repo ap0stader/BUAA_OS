@@ -15,12 +15,13 @@ int main() {
 	int key_fd, msg_fd;
 	char buf[512];
 
+	memset(buf, 0, sizeof(buf));
 	while (!fsipc_key_isset()) {
 		;
 	}
 	debugf("\n[SLAVEA] key is set\n");
 
-	// Read an encrypted file /msga
+	// Read (/msga)
 	if ((r = open("/msga", O_RDONLY | O_ENCRYPT)) < 0) {
 		user_panic("[SLAVEA] cannot open /msga: %d", r);
 	}
@@ -28,7 +29,6 @@ int main() {
 	if ((r = read(msg_fd, buf, 511)) < 0) {
 		user_panic("[SLAVEA] cannot read /msga: %d", r);
 	}
-	debugf("\n");
 	for (int i = 0; i < strlen(msg1) + 1; i++) {
 		if (buf[i] != msg1[i]) {
 			user_panic("[SLAVEA] read /msga returned wrong data at %d: %02x != %02x", i,
@@ -37,13 +37,12 @@ int main() {
 			debugf("%c", buf[i]);
 		}
 	}
-	debugf("\n");
 	if ((r = close(msg_fd)) < 0) {
 		user_panic("[SLAVEA] cannot close /msga: %d", r);
 	}
 	debugf("\n[SLAVEA] read is good\n");
 
-	// Write an encrypted file /newmsga
+	// Write (/newmsga)
 	if ((r = open("/newmsga", O_RDWR | O_ENCRYPT | O_CREAT)) < 0) {
 		user_panic("[SLAVEA] cannot create and open /newmsga: %d", r);
 	}
@@ -54,7 +53,7 @@ int main() {
 	if ((r = close(msg_fd)) < 0) {
 		user_panic("[SLAVEA] cannot close /newmsga: %d", r);
 	}
-	// -----
+	// Read (/newmsga)
 	if ((r = open("/newmsga", O_RDONLY)) < 0) {
 		user_panic("[SLAVEA] cannot open /newmsga: %d", r);
 	}
@@ -68,11 +67,6 @@ int main() {
 				   i, (unsigned char)buf[i], (unsigned char)msg2_encrypted[i]);
 		}
 	}
-	debugf("\n");
-	for (int i = 0; i < strlen(msg2) + 1; i++) {
-		debugf(" %c ", msg2[i]);
-	}
-	debugf("\n");
 	for (int i = 0; i < strlen(msg2) + 1; i++) {
 		debugf("%02x ", (unsigned char)buf[i]);
 	}

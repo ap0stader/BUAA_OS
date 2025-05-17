@@ -15,68 +15,76 @@ int main() {
 	int key_fd, msg_fd;
 	char buf[512];
 
+	memset(buf, 0, sizeof(buf));
+	// Open key file
 	if ((r = open("/key0.key", O_RDONLY)) < 0) {
-		user_panic("cannot open /key0.key: %d", r);
+		user_panic("[EXAMPLE] cannot open /key0.key: %d\n", r);
 	}
 	key_fd = r;
-	debugf("open key0.key is good\n");
+	debugf("[EXAMPLE] open key0.key is good\n");
 
+	// Set the key
 	if ((r = fskey_set(key_fd)) < 0) {
-		user_panic("fskey_set: %d", r);
+		user_panic("[EXAMPLE] fskey_set() failed: %d\n", r);
 	}
-	debugf("fskey_set is good\n");
+	debugf("[EXAMPLE] fskey_set() is good\n");
 
-	close(key_fd);
+	// Close key file
+	if ((r = close(key_fd)) < 0) {
+		user_panic("[EXAMPLE] cannot close /key0.key: %d\n", r);
+	}
+	debugf("[EXAMPLE] close key0.key is good\n");
 
+	// Check if the key is set
 	if (fskey_isset() != 1) {
-		user_panic("fskey_isset: %d", r);
+		user_panic("[EXAMPLE] fskey_isset() failed: %d\n", r);
 	}
-	debugf("fskey_isset is good\n");
+	debugf("[EXAMPLE] fskey_isset() is good\n");
 
-	// Read an encrypted file /msg
+	// Read (/msg)
 	if ((r = open("/msg", O_RDONLY | O_ENCRYPT)) < 0) {
-		user_panic("cannot open /msg: %d", r);
+		user_panic("[EXAMPLE] cannot open /msg: %d\n", r);
 	}
 	msg_fd = r;
 	if ((r = read(msg_fd, buf, 511)) < 0) {
-		user_panic("cannot read /msg: %d", r);
+		user_panic("[EXAMPLE] cannot read /msg: %d\n", r);
 	}
 	for (int i = 0; i < strlen(msg1) + 1; i++) {
 		if (buf[i] != msg1[i]) {
-			user_panic("read /msg returned wrong data at %d: %02x != %02x", i,
+			user_panic("[EXAMPLE] read /msg returned wrong data at %d: %02x != %02x", i,
 				   (unsigned char)buf[i], (unsigned char)msg1[i]);
 		} else {
 			debugf("%c", buf[i]);
 		}
 	}
 	if ((r = close(msg_fd)) < 0) {
-		user_panic("cannot close /msg: %d", r);
+		user_panic("[EXAMPLE] cannot close /msg: %d\n", r);
 	}
-	debugf("read is good\n");
+	debugf("[EXAMPLE] read is good\n");
 
-	// Write an encrypted file /newmsg
+	// Write (/newmsg)
 	if ((r = open("/newmsg", O_RDWR | O_ENCRYPT | O_CREAT)) < 0) {
-		user_panic("cannot create and open /newmsg: %d", r);
+		user_panic("[EXAMPLE] cannot create and open /newmsg: %d\n", r);
 	}
 	msg_fd = r;
 	if ((r = write(msg_fd, msg2, strlen(msg2) + 1)) < 0) {
-		user_panic("cannot write /newmsg: %d", r);
+		user_panic("[EXAMPLE] cannot write /newmsg: %d\n", r);
 	}
 	if ((r = close(msg_fd)) < 0) {
-		user_panic("cannot close /newmsg: %d", r);
+		user_panic("[EXAMPLE] cannot close /newmsg: %d\n", r);
 	}
-	// -----
+	// Read (/newmsg)
 	if ((r = open("/newmsg", O_RDONLY)) < 0) {
-		user_panic("cannot open /newmsg: %d", r);
+		user_panic("[EXAMPLE] cannot open /newmsg: %d\n", r);
 	}
 	msg_fd = r;
 	if ((r = read(msg_fd, buf, 511)) < 0) {
-		user_panic("cannot read /newmsg: %d", r);
+		user_panic("[EXAMPLE] cannot read /newmsg: %d\n", r);
 	}
 	for (int i = 0; i < strlen(msg2) + 1; i++) {
 		if (buf[i] != msg2_encrypted[i]) {
-			user_panic("read /newmsg returned wrong data at %d: %02x != %02x", i,
-				   (unsigned char)buf[i], (unsigned char)msg2_encrypted[i]);
+			user_panic("[EXAMPLE] read /newmsg returned wrong data at %d: %02x != %02x",
+				   i, (unsigned char)buf[i], (unsigned char)msg2_encrypted[i]);
 		}
 	}
 	for (int i = 0; i < strlen(msg2) + 1; i++) {
@@ -88,17 +96,17 @@ int main() {
 	}
 	debugf("\n");
 	if ((r = close(msg_fd)) < 0) {
-		user_panic("cannot close /newmsg: %d", r);
+		user_panic("[EXAMPLE] cannot close /newmsg: %d\n", r);
 	}
-	debugf("write is good\n");
+	debugf("[EXAMPLE] write is good\n");
 
 	if ((r = fskey_unset()) < 0) {
-		user_panic("fskey_unset: %d", r);
+		user_panic("[EXAMPLE] fskey_unset() failed: %d\n", r);
 	}
 	if (fskey_isset() != 0) {
-		user_panic("fskey_isset: %d", r);
+		user_panic("[EXAMPLE] fskey_isset() failed: %d\n", r);
 	}
-	debugf("fskey_unset is good\n");
+	debugf("[EXAMPLE] fskey_unset() is good\n");
 
 	return 0;
 }
