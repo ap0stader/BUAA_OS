@@ -1,3 +1,3 @@
-targets  := encrypt_strong.x
+targets  := encrypt_error.x
 
 include ../include.mk
