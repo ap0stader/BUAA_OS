@@ -12,7 +12,7 @@ static char msg2_encrypted[] = {0xd4, 0x35, 0x00, 0x12, 0x60, 0x2a, 0xfe, 0xc5, 
 
 int main() {
 	int r;
-	int key_fd, msg_fd;
+	int msg_fd;
 	char buf[512];
 
 	memset(buf, 0, sizeof(buf));

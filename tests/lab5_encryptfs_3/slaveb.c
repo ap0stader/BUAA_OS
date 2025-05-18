@@ -16,7 +16,7 @@ static char msg2_encrypted[] = {
 
 int main() {
 	int r;
-	int key_fd, msg_fd;
+	int msg_fd;
 	char buf[512];
 
 	memset(buf, 0, sizeof(buf));

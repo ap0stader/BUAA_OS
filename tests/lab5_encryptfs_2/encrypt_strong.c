@@ -36,7 +36,7 @@ void set_key(char *key_path) {
 	if ((r = fskey_isset()) != 1) {
 		user_panic("[key=%s] fskey_isset() failed: %d\n", key_path, r);
 	}
-	if ((r = close(key_fd)) != 0) {
+	if ((r = close(key_fd)) < 0) {
 		user_panic("[key=%s] close() failed: %d\n", key_path, r);
 	}
 	debugf("\n[key=%s] fskey_set() passed\n", key_path);

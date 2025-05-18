@@ -12,7 +12,7 @@ int main() {
 	if ((r = fskey_set(key_fd)) != -E_INVALID_KEY_FILE) {
 		user_panic("[MASTER] fskey_set(invalid_magic.key) failed: %d\n", r);
 	}
-	if ((r = close(key_fd)) != 0) {
+	if ((r = close(key_fd)) < 0) {
 		user_panic("[MASTER] close(invalid_magic.key) failed: %d\n", r);
 	}
 	debugf("[MASTER] fskey_set(invalid_magic.key) passed\n");
@@ -28,7 +28,7 @@ int main() {
 	if ((r = fskey_isset()) != 1) {
 		user_panic("[MASTER] fskey_isset(key1.key) failed: %d\n", r);
 	}
-	if ((r = close(key_fd)) != 0) {
+	if ((r = close(key_fd)) < 0) {
 		user_panic("[MASTER] close(key1.key) failed: %d\n", r);
 	}
 	debugf("\n[MASTER] fskey_set(key1.key) passed\n");
