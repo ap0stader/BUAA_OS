@@ -8,14 +8,22 @@
 
 // static char *msg = "In place of the old bourgeois society, with its classes and class antagonisms,\nwe shall have an association,\nin which the free development of each is the condition for the free development of all.";
 
-static char *msg = "The history of all hitherto existing society is the history of class struggles.";
+// static char *msg = "The history of all hitherto existing society is the history of class struggles.";
+
+// static char *msg = "In short, the Communists everywhere support every revolutionary movement against the existing social and political order of things.";
+
+// static char *msg = "In all these movements they bring to the front, as the leading question in each, the property question, no matter what its degree of development at the time.";
+
+// static char *msg = "Finally, the labour everywhere for the union and agreement of the democratic parties of all countries.";
+
+static char *msg = "In short, the Communists everywhere support every revolutionary movement against the existing social and political order of things.\nIn all these movements they bring to the front, as the leading question in each, the property question, no matter what its degree of development at the time.\nFinally, the labour everywhere for the union and agreement of the democratic parties of all countries.";
 
 int main() {
     int r;
     int key_fd, msg_fd;
     char buf[512];
     
-    key_fd = open("/key2.key", O_RDONLY);
+    key_fd = open("/key3.key", O_RDONLY);
     r = fskey_set(key_fd);
     debugf("%d\n", r);
     close(key_fd);
