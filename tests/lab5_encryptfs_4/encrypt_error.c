@@ -73,18 +73,18 @@ int main() {
 		user_panic("[O_ENCRYPT] close(key1.key) failed: %d\n", r);
 	}
 	compare_msg1("O_ENCRYPT");
-	if ((r = open("/empty_key.key", O_RDONLY | O_ENCRYPT)) < 0) {
-		user_panic("[O_ENCRYPT] open(empty_key.key) failed: %d\n", r);
+	if ((r = open("/empty.key", O_RDONLY | O_ENCRYPT)) < 0) {
+		user_panic("[O_ENCRYPT] open(empty.key) failed: %d\n", r);
 	}
 	key_fd = r;
 	if ((r = fskey_set(key_fd)) != -E_INVAL) {
-		user_panic("[O_ENCRYPT] fskey_set(empty_key.key) failed: %d\n", r);
+		user_panic("[O_ENCRYPT] fskey_set(empty.key) failed: %d\n", r);
 	}
 	if ((r = fskey_isset()) != 1) {
-		user_panic("[O_ENCRYPT] fskey_isset(empty_key.key) failed: %d\n", r);
+		user_panic("[O_ENCRYPT] fskey_isset(empty.key) failed: %d\n", r);
 	}
-	if ((r = close(key_fd)) < 0) {
-		user_panic("[O_ENCRYPT] close(empty_key.key) failed: %d\n", r);
+	if ((r = close(key_fd)) != 0) {
+		user_panic("[O_ENCRYPT] close(empty.key) failed: %d\n", r);
 	}
 	compare_msg1("O_ENCRYPT");
 	debugf("[O_ENCRYPT] fskey_set() passed\n");
@@ -125,7 +125,7 @@ int main() {
 	if ((r = open("/msg", O_RDONLY | O_ENCRYPT)) != -E_BAD_KEY) {
 		user_panic("[NOKEY_OPEN] open()_1 failed: %d\n", r);
 	}
-	if ((r = open("/empty_key.key", O_RDONLY)) < 0) {
+	if ((r = open("/empty.key", O_RDONLY)) < 0) {
 		user_panic("[NOKEY_OPEN] open()_2 failed: %d\n", r);
 	}
 	key_fd = r;
@@ -164,7 +164,7 @@ int main() {
 	debugf("[NOKEY_CLOSE] close() passed\n");
 
 	// Invalid key - empty key
-	if ((r = open("/empty_key.key", O_RDONLY)) < 0) {
+	if ((r = open("/empty.key", O_RDONLY)) < 0) {
 		user_panic("[KEY_EMPTY] open() failed: %d\n", r);
 	}
 	key_fd = r;
@@ -180,6 +180,7 @@ int main() {
 	if ((r = open("/too_short.key", O_RDONLY)) < 0) {
 		user_panic("[KEY_SHORT] open() failed: %d\n", r);
 	}
+	key_fd = r;
 	if ((r = fskey_set(key_fd)) != -E_INVALID_KEY_FILE) {
 		user_panic("[KEY_SHORT] fskey_set() failed: %d\n", r);
 	}
@@ -192,6 +193,7 @@ int main() {
 	if ((r = open("/invalid_magic.key", O_RDONLY)) < 0) {
 		user_panic("[KEY_MAGIC] open() failed: %d\n", r);
 	}
+	key_fd = r;
 	if ((r = fskey_set(key_fd)) != -E_INVALID_KEY_FILE) {
 		user_panic("[KEY_MAGIC] fskey_set() failed: %d\n", r);
 	}
