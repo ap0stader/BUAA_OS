@@ -1,2 +1,2 @@
-init-envs += encrypt_strong /fs_serv
+init-envs += encrypt_error /fs_serv
 fs-files  += $(wildcard $(test_dir)/rootfs/*)

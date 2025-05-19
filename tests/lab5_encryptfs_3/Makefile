@@ -1,3 +1,3 @@
-targets  := master.x slavea.x slaveb.x
+targets  := encrypt_strong.x
 
 include ../include.mk

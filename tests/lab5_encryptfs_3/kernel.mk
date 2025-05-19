@@ -1,2 +1,2 @@
-init-envs += master /fs_serv slavea slaveb
+init-envs += encrypt_strong /fs_serv
 fs-files  += $(wildcard $(test_dir)/rootfs/*)
