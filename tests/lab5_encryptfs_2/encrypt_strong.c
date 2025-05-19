@@ -25,7 +25,7 @@ void set_key(char *key_path) {
 	int key_fd;
 
 	// Open key file
-	if ((r = open(key_path, O_RDONLY)) < 0) {
+	if ((r = open(key_path, O_RDWR)) < 0) {
 		user_panic("[key=%s] cannot open %s: %d", key_path, key_path, r);
 	}
 	key_fd = r;

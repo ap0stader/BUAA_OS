@@ -90,7 +90,8 @@ int main() {
 	debugf("[O_ENCRYPT] fskey_set() passed\n");
 
 	// Set key twice without unset key
-	if ((r = open("/key2.key", O_RDONLY)) < 0) {
+	// Use invalid_magic key to check if the -E_BAD_KEY is prior to -E_INVALID_KEY_FILE
+	if ((r = open("/invalid_magic.key", O_RDONLY)) < 0) {
 		user_panic("[SET_TWICE] open() failed: %d\n", r);
 	}
 	key_fd = r;
