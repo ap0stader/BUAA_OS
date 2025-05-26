@@ -4,11 +4,12 @@ static char *msg1 = "Let the ruling classes tremble at a Communistic "
 		    "revolution.\nThe proletarians have nothing to lose but "
 		    "their chains.\nThey have a world to win.\n";
 
-static char *msg2 = "Workers of the world, unite!";
+static char *msg2 = "Workers of the world, unite!   ";
 
 static char msg2_encrypted[] = {0xee, 0x83, 0x4c, 0xd0, 0x60, 0xa4, 0x6e, 0x00, 0xc2, 0xc8,
 				0x64, 0x6a, 0x0e, 0x9a, 0x28, 0x22, 0x92, 0x62, 0x61, 0x29,
-				0x8f, 0x2e, 0xa3, 0x19, 0x49, 0xbf, 0x82, 0x91, 0x54};
+				0x8f, 0x2e, 0xa3, 0x19, 0x49, 0xbf, 0x82, 0x91, 0x74, 0xbf,
+				0x60, 0xcc};
 
 int main() {
 	int r;
@@ -17,7 +18,7 @@ int main() {
 
 	memset(buf, 0, sizeof(buf));
 	// Open key file
-	if ((r = open("/key0.key", O_RDONLY)) < 0) {
+	if ((r = open("/key0.key", O_RDWR)) < 0) {
 		user_panic("[EXAMPLE] cannot open /key0.key: %d\n", r);
 	}
 	key_fd = r;
@@ -67,8 +68,10 @@ int main() {
 		user_panic("[EXAMPLE] cannot create and open /newmsg: %d\n", r);
 	}
 	msg_fd = r;
-	if ((r = write(msg_fd, msg2, strlen(msg2) + 1)) < 0) {
-		user_panic("[EXAMPLE] cannot write /newmsg: %d\n", r);
+	for (int i = 0; i < 4096; i += 32) {
+		if ((r = write(msg_fd, msg2, strlen(msg2) + 1)) < 0) {
+			user_panic("[EXAMPLE] cannot write /newmsg at %d: %d\n", i, r);
+		}
 	}
 	if ((r = close(msg_fd)) < 0) {
 		user_panic("[EXAMPLE] cannot close /newmsg: %d\n", r);
