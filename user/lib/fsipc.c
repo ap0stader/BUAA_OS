@@ -136,3 +136,20 @@ int fsipc_remove(const char *path) {
 int fsipc_sync(void) {
 	return fsipc(FSREQ_SYNC, fsipcbuf, 0, 0);
 }
+
+int fsipc_key_set(u_int fileid) {
+	struct Fsreq_key_set *req;
+
+	req = (struct Fsreq_key_set *)fsipcbuf;
+	req->req_fileid = fileid;
+
+	return fsipc(FSREQ_KEY_SET, req, 0, 0);
+}
+
+int fsipc_key_unset(void) {
+	return fsipc(FSREQ_KEY_UNSET, fsipcbuf, 0, 0);
+}
+
+int fsipc_key_isset(void) {
+	return fsipc(FSREQ_KEY_ISSET, fsipcbuf, 0, 0);
+}

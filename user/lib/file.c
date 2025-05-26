@@ -258,3 +258,31 @@ int remove(const char *path) {
 int sync(void) {
 	return fsipc_sync();
 }
+
+int fskey_set(int fdnum) {
+	int r;
+	struct Fd *fd;
+
+	if ((r = fd_lookup(fdnum, &fd)) < 0) {
+		return r;
+	}
+
+	// For safe reason, will not be test
+	if (fd->fd_dev_id != devfile.dev_id) {
+		return -E_INVAL;
+	}
+
+	if (fd->fd_omode & O_ENCRYPT || (fd->fd_omode & O_ACCMODE) == O_WRONLY) {
+		return -E_INVAL;
+	}
+
+	return fsipc_key_set(((struct Filefd *)fd)->f_fileid);
+}
+
+int fskey_unset() {
+	return fsipc_key_unset();
+}
+
+int fskey_isset() {
+	return fsipc_key_isset();
+}

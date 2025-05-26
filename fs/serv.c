@@ -22,6 +22,9 @@ struct Open {
 	struct Filefd *o_ff;
 };
 
+static int encrypt_key_set;
+static unsigned char encrypt_key[BLOCK_SIZE];
+
 /*
  * Max number of open files in the file system at once
  */
@@ -208,11 +211,23 @@ void serve_map(u_int envid, struct Fsreq_map *rq) {
 		return;
 	}
 
+	if (pOpen->o_mode & O_ENCRYPT && !encrypt_key_set) {
+		ipc_send(envid, -E_BAD_KEY, 0, 0);
+		return;
+	}
+
 	filebno = rq->req_offset / BLOCK_SIZE;
 
 	if ((r = file_get_block(pOpen->o_file, filebno, &blk)) < 0) {
 		ipc_send(envid, r, 0, 0);
 		return;
+	}
+
+	if(pOpen->o_mode & O_ENCRYPT) {
+		// Decrypt the block using the key
+		for (int i = 0; i < BLOCK_SIZE; i++) {
+			((unsigned char *)blk)[i] ^= encrypt_key[i];
+		}
 	}
 
 	ipc_send(envid, 0, blk, PTE_D | PTE_LIBRARY);
@@ -266,6 +281,25 @@ void serve_close(u_int envid, struct Fsreq_close *rq) {
 	if ((r = open_lookup(envid, rq->req_fileid, &pOpen)) < 0) {
 		ipc_send(envid, r, 0, 0);
 		return;
+	}
+
+	if (pOpen->o_mode & O_ENCRYPT) {
+		if (!encrypt_key_set) {
+			ipc_send(envid, -E_BAD_KEY, 0, 0);
+			return;
+		}
+		int nblocks = ROUND(pOpen->o_file->f_size, BLOCK_SIZE) / BLOCK_SIZE;
+		for (int bno = 0; bno < nblocks; bno++) {
+			void *blk;
+			if ((r = file_get_block(pOpen->o_file, bno, &blk)) < 0) {
+				ipc_send(envid, r, 0, 0);
+				return;
+			}
+			// Encrypt the block using the key
+			for (int i = 0; i < BLOCK_SIZE; i++) {
+				((unsigned char *)blk)[i] ^= encrypt_key[i];
+			}
+		}
 	}
 
 	file_close(pOpen->o_file);
@@ -334,6 +368,70 @@ void serve_sync(u_int envid) {
 	ipc_send(envid, 0, 0, 0);
 }
 
+void serve_key_set(u_int envid, struct Fsreq_key_set *rq) {
+	// Copy the encryption key from the request to the global variable
+	struct Open *pOpen;
+	void *blk;
+	int r;
+
+	// Judge if the key is set
+	if (encrypt_key_set) {
+		ipc_send(envid, -E_BAD_KEY, 0, 0);
+		return;
+	}
+
+	if ((r = open_lookup(envid, rq->req_fileid, &pOpen)) < 0) {
+		ipc_send(envid, r, 0, 0);
+		return;
+	}
+
+	// The size of encrypt key must >= 2 * BLOCK_SIZE
+	if (pOpen->o_file->f_size < 2 * BLOCK_SIZE) {
+		ipc_send(envid, -E_INVALID_KEY_FILE, 0, 0);
+		return;
+	}
+
+	// Read the first block and judge the magic number
+	if ((r = file_get_block(pOpen->o_file, 0, &blk)) < 0) {
+		ipc_send(envid, r, 0, 0);
+		return;
+	}
+
+	if (*((uint32_t *)blk) != FS_MAGIC) {
+		ipc_send(envid, -E_INVALID_KEY_FILE, 0, 0);
+		return;
+	}
+
+	// Read the second block and set the key
+	if ((r = file_get_block(pOpen->o_file, 1, &blk)) < 0) {
+		ipc_send(envid, r, 0, 0);
+		return;
+	}
+
+	memcpy(encrypt_key, blk, BLOCK_SIZE);
+
+	encrypt_key_set = 1;
+
+	ipc_send(envid, 0, 0, 0);
+}
+
+void serve_key_unset(u_int envid) {
+	if (!encrypt_key_set) {
+		ipc_send(envid, -E_BAD_KEY, 0, 0);
+		return;
+	}
+
+	encrypt_key_set = 0;
+
+	memset(encrypt_key, 0, BLOCK_SIZE);
+
+	ipc_send(envid, 0, 0, 0);
+}
+
+void serve_key_isset(u_int envid) {
+	ipc_send(envid, encrypt_key_set, 0, 0);
+}
+
 /*
  * The serve function table
  * File system use this table and the request number to
@@ -343,6 +441,9 @@ void *serve_table[MAX_FSREQNO] = {
     [FSREQ_OPEN] = serve_open,	 [FSREQ_MAP] = serve_map,     [FSREQ_SET_SIZE] = serve_set_size,
     [FSREQ_CLOSE] = serve_close, [FSREQ_DIRTY] = serve_dirty, [FSREQ_REMOVE] = serve_remove,
     [FSREQ_SYNC] = serve_sync,
+	[FSREQ_KEY_SET] = serve_key_set,
+	[FSREQ_KEY_UNSET] = serve_key_unset,
+	[FSREQ_KEY_ISSET] = serve_key_isset,
 };
 
 /*

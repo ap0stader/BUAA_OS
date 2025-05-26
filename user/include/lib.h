@@ -100,6 +100,9 @@ int fsipc_dirty(u_int, u_int);
 int fsipc_remove(const char *);
 int fsipc_sync(void);
 int fsipc_incref(u_int);
+int fsipc_key_set(u_int fileid);
+int fsipc_key_unset();
+int fsipc_key_isset();
 
 // fd.c
 int close(int fd);
@@ -118,6 +121,9 @@ int read_map(int fd, u_int offset, void **blk);
 int remove(const char *path);
 int ftruncate(int fd, u_int size);
 int sync(void);
+int fskey_set(int fd);
+int fskey_unset();
+int fskey_isset();
 
 #define user_assert(x)                                                                             \
 	do {                                                                                       \
@@ -130,6 +136,8 @@ int sync(void);
 #define O_WRONLY 0x0001	 /* open for writing only */
 #define O_RDWR 0x0002	 /* open for reading and writing */
 #define O_ACCMODE 0x0003 /* mask for above modes */
+// Add a new open mode for encrypted file
+#define O_ENCRYPT 0x0010 /* open an encrypted file */
 #define O_CREAT 0x0100	 /* create if nonexistent */
 #define O_TRUNC 0x0200	 /* truncate to zero length */
 
